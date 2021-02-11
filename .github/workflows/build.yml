@@ -1,0 +1,51 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        #variant: [gcc, gcc-asan, clang, clang-asan]
+        variant: [gcc, gcc-asan]
+
+        include:
+          - variant: gcc
+            asan: 0
+            clang: 0
+          - variant: gcc-asan
+            asan: 1
+            clang: 0
+          # - variant: clang
+          #   asan: 0
+          #   clang: 1
+          # - variant: clang-asan
+          #   asan: 1
+          #   clang: 1
+    container:
+      image: quay.io/389ds/ci-images:test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Toggle AddressSanitizer support to ${{ matrix.asan }}
+        run: sed -i -e "/^ASAN_ON/s/.*/ASAN_ON = ${{ matrix.asan }}/" rpm.mk
+
+      - name: Toggle Clang support to ${{ matrix.clang }}
+        run: sed -i -e "/^CLANG_ON/s/.*/CLANG_ON = ${{ matrix.clang }}/" rpm.mk
+
+      # - name: Build RPMs
+      #   run: cd $GITHUB_WORKSPACE && SKIP_AUDIT_CI=1 make -f rpm.mk dist-bz2 rpms
+
+      - name: Tar build artifacts
+        run: tar -cvf dist.tar dirsrvtests/
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v2
+        with:
+          name: rpms-${{ matrix.variant }}
+          path: dist.tar

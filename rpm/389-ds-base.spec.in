@@ -41,6 +41,10 @@
 %if %{use_clang}
 %global toolchain clang
 %global _missing_build_ids_terminate_build 0
+# Disabled LTO when using Clang with Rust, see #4596
+%if %{use_rust}
+%global _lto_cflags %nil
+%endif
 %endif
 
 # Build cockpit plugin
