@@ -12,6 +12,7 @@ actions:
 srpm_build_deps:
   - make
   - cargo
+  - npm
 # See: https://packit.dev/docs/configuration/#upstream_tag_template
 upstream_tag_template: "389-ds-base-{version}"
 
