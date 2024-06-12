@@ -7,7 +7,8 @@ actions:
   create-archive:
     - "make -f rpm.mk download-cargo-dependencies tarballs"
     - "bash -c 'ls -1 dist/sources/389-ds-base*.tar.bz2'"
-
+srpm_build_deps:
+  - make
 # See: https://packit.dev/docs/configuration/#upstream_tag_template
 upstream_tag_template: "389-ds-base-{version}"
 
