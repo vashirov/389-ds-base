@@ -122,6 +122,7 @@ BuildRequires:    pkgconfig(libpcre2-8)
 BuildRequires:    autoconf
 BuildRequires:    automake
 BuildRequires:    libtool
+BuildRequires:    make
 # For our documentation
 BuildRequires:    doxygen
 # For tests!
