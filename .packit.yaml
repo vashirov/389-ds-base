@@ -7,8 +7,8 @@ paths:
 actions:
   post-upstream-clone: "make -f rpm.mk rpmspec"
   create-archive:
-    - "make -f rpm.mk download-cargo-dependencies tarballs"
-    - "bash -c 'ls -1 dist/sources/389-ds-base*.tar.bz2'"
+    - "bash -c 'cd ${PACKIT_UPSTREAM_REPO}; make -f rpm.mk download-cargo-dependencies tarballs'"
+    - "bash -c 'cd ${PACKIT_UPSTREAM_REPO}; ls -1 dist/sources/389-ds-base*.tar.bz2'"
 srpm_build_deps:
   - make
   - cargo
