@@ -12,6 +12,8 @@ actions:
     - "bash -c 'cd ${PACKIT_UPSTREAM_REPO}; ls -1 dist/sources/389-ds-base*.tar.bz2'"
       #  fix-spec-file:
       #    - "bash -c 'cd ${PACKIT_UPSTREAM_REPO}; make -f rpm.mk rpmspec'"
+  get-current-version:
+  - rpmspec -q --qf "%{Version}" --srpm rpm/389-ds-base.spec
 srpm_build_deps:
   - make
   - cargo
@@ -39,6 +41,3 @@ jobs:
   trigger: pull_request
   targets:
   - fedora-all
-  actions:
-    get-current-version:
-    - rpmspec -q --qf "%{Version}" --srpm rpm/389-ds-base.spec
