@@ -5,7 +5,7 @@ specfile_path: rpm/389-ds-base.spec
 paths:
   - ./
 actions:
-  post-upstream-clone: "make -f rpm.mk rpmspec"
+  post-upstream-clone: "bash -c 'cd ${PACKIT_UPSTREAM_REPO}; make -f rpm.mk rpmspec"
   create-archive:
     - "bash -c 'cd ${PACKIT_UPSTREAM_REPO}; make -f rpm.mk download-cargo-dependencies tarballs'"
     - "bash -c 'cd ${PACKIT_UPSTREAM_REPO}; ls -1 dist/sources/389-ds-base*.tar.bz2'"
