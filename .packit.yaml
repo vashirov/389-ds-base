@@ -29,10 +29,7 @@ files_to_sync:
 
 allowed_pr_authors:
   - packit
-  - vashirov
-allowed_committers:
-  - packit
-  - vashirov
+  - all_admins
 
 jobs:
 - job: copr_build
