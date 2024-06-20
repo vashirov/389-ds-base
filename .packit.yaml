@@ -39,3 +39,6 @@ jobs:
   trigger: pull_request
   targets:
   - fedora-all
+  actions:
+    get-current-version:
+    - rpmspec -q --qf "%{Version}" --srpm rpm/389-ds-base.spec
