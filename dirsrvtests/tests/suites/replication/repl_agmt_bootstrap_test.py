@@ -15,6 +15,7 @@ from lib389.topologies import topology_m2 as topo
 from lib389.replica import BootstrapReplicationManager,  Replicas
 from lib389.idm.user import TEST_USER_PROPERTIES, UserAccounts,  UserAccount
 from lib389.idm.group import Group
+from lib389.utils import ds_is_older
 
 pytestmark = [pytest.mark.tier1,
               pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]

@@ -23,7 +23,7 @@ from lib389.index import Indexes
 from lib389.monitor import Monitor
 from lib389.backend import Backends
 from lib389.config import LDBMConfig
-from lib389.utils import ds_is_newer
+from lib389.utils import ds_is_newer, ds_is_older
 from lib389.idm.user import UserAccount
 from lib389.idm.account import Accounts
 from lib389.cli_ctl.dbtasks import dbtasks_ldif2db

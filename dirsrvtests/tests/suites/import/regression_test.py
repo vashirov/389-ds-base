@@ -19,7 +19,7 @@ from lib389._constants import DEFAULT_SUFFIX
 from lib389.tasks import *
 from lib389.idm.user import UserAccounts
 from lib389.idm.directorymanager import DirectoryManager
-from lib389.utils import get_default_db_lib
+from lib389.utils import get_default_db_lib, ds_is_older
 
 pytestmark = pytest.mark.tier1
 

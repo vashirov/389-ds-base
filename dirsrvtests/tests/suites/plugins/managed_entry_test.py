@@ -19,6 +19,7 @@ from lib389.plugins import MEPTemplates, MEPConfigs, ManagedEntriesPlugin, MEPTe
 from lib389.idm.nscontainer import nsContainers
 from lib389.idm.domain import Domain
 from lib389.tasks import Entry
+from lib389.utils import ds_is_older
 import ldap
 
 pytestmark = pytest.mark.tier1

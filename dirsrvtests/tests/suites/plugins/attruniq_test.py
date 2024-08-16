@@ -14,6 +14,7 @@ from lib389.idm.user import UserAccounts
 from lib389.idm.group import Groups
 from lib389._constants import DEFAULT_SUFFIX
 from lib389.topologies import topology_st
+from lib389.utils import ds_is_older
 
 pytestmark = [pytest.mark.tier1,
               pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]

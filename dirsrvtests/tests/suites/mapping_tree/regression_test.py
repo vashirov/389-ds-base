@@ -15,6 +15,7 @@ from lib389.backend import Backends, Backend
 from lib389.dbgen import dbgen_users
 from lib389.mappingTree import MappingTrees
 from lib389.topologies import topology_st
+from lib389.utils import ds_is_older
 
 try:
     from lib389.backend import BackendSuffixView

@@ -15,6 +15,7 @@ from lib389.topologies import topology_st as topo
 from lib389.idm.role import FilteredRoles
 from lib389.idm.nscontainer import nsContainer
 from lib389.idm.user import UserAccount
+from lib389.utils import ds_is_older
 
 logging.getLogger(__name__).setLevel(logging.INFO)
 log = logging.getLogger(__name__)

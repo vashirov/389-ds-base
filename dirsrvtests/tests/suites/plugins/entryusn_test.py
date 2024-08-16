@@ -20,6 +20,7 @@ from lib389.idm.organizationalunit import OrganizationalUnit
 from lib389.tombstone import Tombstones
 from lib389.rootdse import RootDSE
 from lib389.topologies import topology_st, topology_m2
+from lib389.utils import ds_is_older
 
 pytestmark = pytest.mark.tier1
 

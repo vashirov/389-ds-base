@@ -16,6 +16,7 @@ from lib389.topologies import topology_m1 as topo
 from lib389.dseldif import DSEldif
 from lib389.tombstone import Tombstones
 from lib389.idm.user import UserAccounts, TEST_USER_PROPERTIES
+from lib389.utils import ds_is_older
 
 pytestmark = [pytest.mark.tier1,
               pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
