@@ -232,6 +232,7 @@ def test_healthcheck_RI_plugin_missing_indexes(topology_st):
     run_healthcheck_and_flush_log(topology_st, standalone, json=True, searched_code=JSON_OUTPUT)
 
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_healthcheck_MO_plugin_missing_indexes(topology_st):
     """Check if HealthCheck returns DSMOLE0002 code
 
@@ -555,6 +556,8 @@ def test_healthcheck_accesslog_buffering(topology_st):
     log.info('Reset nsslapd-accesslog-logbuffering to on')
     inst.config.set("nsslapd-accesslog-logbuffering", "on")
 
+
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_healthcheck_securitylog_buffering(topology_st):
     """Check if HealthCheck returns DSCLE0005 code when security log buffering
     is disabled
@@ -587,6 +590,8 @@ def test_healthcheck_securitylog_buffering(topology_st):
     log.info('Reset nnsslapd-securitylog-logbuffering to on')
     inst.config.set("nsslapd-securitylog-logbuffering", "on")
 
+
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_healthcheck_auditlog_buffering(topology_st):
     """Check if HealthCheck returns DSCLE0006 code when audit log buffering
     is disabled

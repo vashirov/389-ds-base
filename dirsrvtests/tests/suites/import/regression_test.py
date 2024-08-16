@@ -19,6 +19,7 @@ from lib389._constants import DEFAULT_SUFFIX
 from lib389.tasks import *
 from lib389.idm.user import UserAccounts
 from lib389.idm.directorymanager import DirectoryManager
+from lib389.utils import get_default_db_lib
 
 pytestmark = pytest.mark.tier1
 
@@ -319,6 +320,7 @@ def create_backend_and_import(instance, ldif_file, suffix, backend):
     return end - start
 
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 @pytest.mark.skipif(get_default_db_lib() == "mdb", reason="Not cache size over mdb")
 def test_ldif2db_after_backend_create(topo):
     """Test that ldif2db after backend creation is not slow first time

@@ -1066,6 +1066,7 @@ def test_audit_log_rotate_and_check_string(topology_st, clean_access_logs, set_a
         assert count == 1
 
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_enable_external_libs_debug_log(topology_st):
     """Check that OpenLDAP logs are successfully enabled and disabled
 
@@ -1139,6 +1140,8 @@ def test_enable_external_libs_debug_log(topology_st):
     log.info('Check the error log for OpenLDAP debug log')
     assert not standalone.ds_error_log.match('.*libldap/libber.*')
 
+
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_referral_check(topology_st, request):
     """Check that referral detection mechanism works
 
@@ -1222,6 +1225,8 @@ def test_referral_check(topology_st, request):
 
     request.addfinalizer(fin)
 
+
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_referral_subsuffix(topology_st, request):
     """Test the results of an inverted parent suffix definition in the configuration.
 
@@ -1400,6 +1405,8 @@ def test_referral_subsuffix(topology_st, request):
 
     request.addfinalizer(fin)
 
+
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_missing_backend_suffix(topology_st, request):
     """Test that the server does not crash if a backend has no suffix
 

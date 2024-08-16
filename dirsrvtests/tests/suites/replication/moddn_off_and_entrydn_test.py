@@ -17,7 +17,8 @@ from lib389.dseldif import DSEldif
 from lib389.tombstone import Tombstones
 from lib389.idm.user import UserAccounts, TEST_USER_PROPERTIES
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 def test_import_with_moddn_off(topo):
     """Test that imports and replication work after switching to entrydn index

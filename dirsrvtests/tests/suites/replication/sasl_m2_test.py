@@ -22,7 +22,8 @@ from lib389._mapped_object import DSLdapObject
 from lib389.replica import ReplicationManager, Replicas, BootstrapReplicationManager
 from lib389.topologies import topology_m2 as topo_m2
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 DEBUGGING = os.getenv("DEBUGGING", default=False)
 if DEBUGGING:

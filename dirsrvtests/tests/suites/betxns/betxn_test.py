@@ -358,6 +358,7 @@ def test_ri_and_mep_cache_corruption(topology_st):
     # Success
     log.info("Test PASSED")
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_revert_cache(topology_st, request):
     """Tests that reversion of the entry cache does not occur
     during 'normal' failure (like schema violation) but only
@@ -445,6 +446,7 @@ def test_revert_cache(topology_st, request):
 
     request.addfinalizer(fin)
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_revert_cache_noloop(topology_st, request):
     """Tests that when an entry is reverted, if an update

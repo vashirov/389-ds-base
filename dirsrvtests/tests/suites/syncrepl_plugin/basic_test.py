@@ -233,6 +233,7 @@ class Sync_persist(threading.Thread, ReconnectLDAPObject, SyncreplConsumer):
         log.info("ZZZ result = %s" % self.result)
         ldap_connection.unbind()
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_sync_repl_mep(topology, request):
     """Test sync repl with MEP plugin that triggers several
     updates on the same entry
@@ -320,6 +321,7 @@ def test_sync_repl_mep(topology, request):
     inst.start()
 
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_sync_repl_cookie(topology, init_sync_repl_plugins, request):
     """Test sync_repl cookie are progressing is an increasing order
        when there are nested updates
@@ -384,6 +386,7 @@ def test_sync_repl_cookie(topology, init_sync_repl_plugins, request):
 
     return
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_sync_repl_cookie_add_del(topology, init_sync_repl_plugins, request):
     """Test sync_repl cookie are progressing is an increasing order
        when there add and del
@@ -445,6 +448,7 @@ def test_sync_repl_cookie_add_del(topology, init_sync_repl_plugins, request):
 
     return
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_sync_repl_cookie_with_failure(topology, init_sync_repl_plugins, request):
     """Test sync_repl cookie are progressing is the right order
        when there is a failure in nested updates
@@ -530,6 +534,7 @@ def test_sync_repl_cookie_with_failure(topology, init_sync_repl_plugins, request
 
     request.addfinalizer(fin)
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_sync_repl_cenotaph(topo_m2, request):
     """Test the creation of a cenotaph while a
        sync repl client is running
@@ -592,6 +597,7 @@ def test_sync_repl_cenotaph(topo_m2, request):
 
     request.addfinalizer(fin)
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_sync_repl_dynamic_plugin(topology, request):
     """Test sync_repl with dynamic plugin
 
@@ -660,6 +666,7 @@ def test_sync_repl_dynamic_plugin(topology, request):
     # Success
     log.info('Test complete')
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_sync_repl_invalid_cookie(topology, request):
     """Test sync_repl with invalid cookie
 

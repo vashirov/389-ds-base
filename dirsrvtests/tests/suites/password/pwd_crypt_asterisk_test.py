@@ -12,7 +12,8 @@ from lib389.topologies import topology_st
 from lib389.idm.user import UserAccounts
 from lib389._constants import (DEFAULT_SUFFIX, PASSWORD)
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 def test_password_crypt_asterisk_is_rejected(topology_st):
     """It was reported that {CRYPT}* was allowing all passwords to be

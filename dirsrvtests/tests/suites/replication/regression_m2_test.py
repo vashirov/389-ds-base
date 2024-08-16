@@ -889,6 +889,7 @@ def verify_keepalive_entries(topo, expected):
     return entries
 
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_keepalive_entries(topo_m2):
     """Check that keep alive entries are created
 

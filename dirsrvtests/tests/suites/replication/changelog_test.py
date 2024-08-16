@@ -731,6 +731,7 @@ def test_retrochangelog_trimming_crash(topo, changelog_init):
 
 @pytest.mark.bz2034407
 @pytest.mark.skipif(not os.path.isfile("/usr/bin/db_stat"), reason="libdb-utils package is not installed")
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_changelog_pagesize(topo):
     """Test that changelog page size is set properly
 

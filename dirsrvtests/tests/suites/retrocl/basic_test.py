@@ -21,7 +21,8 @@ from lib389.idm.user import UserAccount, UserAccounts
 from lib389.idm.domain import Domain
 from lib389._mapped_object import DSLdapObjects
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 USER1_DN = 'uid=user1,ou=people,'+ DEFAULT_SUFFIX
 USER2_DN = 'uid=user2,ou=people,'+ DEFAULT_SUFFIX

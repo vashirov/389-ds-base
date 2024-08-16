@@ -97,6 +97,7 @@ def setup(topology_st, request):
             "groups": groups_list}
 
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_entryusn_no_duplicates(topology_st, setup):
     """Verify that entryUSN is not duplicated after memberOf operation
 

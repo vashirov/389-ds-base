@@ -15,7 +15,8 @@ from lib389._constants import DN_DM, PW_DM
 from lib389.topologies import topology_st as topo
 from tempfile import TemporaryDirectory
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 DEBUGGING = os.getenv("DEBUGGING", default=False)
 if DEBUGGING:

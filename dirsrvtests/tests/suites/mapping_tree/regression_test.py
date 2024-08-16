@@ -22,7 +22,8 @@ try:
 except ImportError:
     has_orphan_attribute = False
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 DEBUGGING = os.getenv("DEBUGGING", default=False)
 if DEBUGGING:

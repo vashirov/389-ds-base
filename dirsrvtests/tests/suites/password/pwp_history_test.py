@@ -257,6 +257,8 @@ def test_basic(topology_st):
     # Done
     log.info('Test suite PASSED.')
 
+
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_prehashed_pwd(topology_st):
     """Test password history is updated with a pre-hashed password change
 

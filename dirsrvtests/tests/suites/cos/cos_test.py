@@ -92,6 +92,8 @@ def test_positive(topo, reset_ignore_vattr):
     assert user.present('employeeType')
     cosdef.delete()
 
+
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")
 def test_vattr_on_cos_definition(topo, reset_ignore_vattr):
     """Test nsslapd-ignore-virtual-attrs configuration attribute
        The attribute is ON by default. If a cos definition is

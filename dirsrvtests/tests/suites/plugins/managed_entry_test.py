@@ -252,6 +252,7 @@ def test_mentry01(topo, _create_inital):
     assert user.get_attr_val_utf8('mepManagedEntry') != before
 
 
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_managed_entry_removal(topo):
     """Check that we can't remove managed entry manually
 

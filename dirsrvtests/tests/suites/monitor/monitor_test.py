@@ -72,7 +72,7 @@ def test_monitor(topo):
     log.info('dtablesize: {0[0]},readwaiters: {0[1]},entriessent: {0[2]},bytessent: {0[3]},currenttime: {0[4]},starttime: {0[5]}'.format(stats))
 
 
-pytestmark = pytest.mark.tier1
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_monitor_ldbm(topo):
     """This test is to check if we are getting the correct monitor entry
 
@@ -112,7 +112,7 @@ def test_monitor_ldbm(topo):
         assert False
 
 
-pytestmark = pytest.mark.tier1
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_monitor_backend(topo):
     """This test is to check if we are getting the correct backend monitor entry
 

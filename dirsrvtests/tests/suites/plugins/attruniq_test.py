@@ -15,7 +15,8 @@ from lib389.idm.group import Groups
 from lib389._constants import DEFAULT_SUFFIX
 from lib389.topologies import topology_st
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)

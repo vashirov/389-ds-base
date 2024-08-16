@@ -89,6 +89,7 @@ def test_password_modify_non_utf8(topology_st):
 
     # Create user and set password
     standalone = topology_st.standalone
+    standalone.config.set('passwordStorageScheme', 'PBKDF2-SHA512')
     users = UserAccounts(standalone, DEFAULT_SUFFIX)
     if not users.exists(TEST_USER_PROPERTIES['uid'][0]):
         user = users.create(properties=TEST_USER_PROPERTIES)

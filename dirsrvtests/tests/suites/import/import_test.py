@@ -29,7 +29,8 @@ from lib389.idm.account import Accounts
 from lib389.cli_ctl.dbtasks import dbtasks_ldif2db
 from lib389.cli_base import FakeArgs
 
-pytestmark = pytest.mark.tier1
+pytestmark = [pytest.mark.tier1,
+              pytest.mark.skipif(ds_is_older('1.4.3'), reason="Not implemented")]
 
 DEBUGGING = os.getenv("DEBUGGING", default=False)
 if DEBUGGING:

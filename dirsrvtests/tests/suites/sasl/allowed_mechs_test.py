@@ -180,6 +180,7 @@ def test_basic_feature(topology_st):
 @pytest.mark.bz1816854
 @pytest.mark.ds50869
 @pytest.mark.xfail(ds_is_older('1.3.11', '1.4.3.6'), reason="May fail because of bz1816854")
+@pytest.mark.skipif(ds_is_older('1.4.3'), reason="not implemented")
 def test_config_set_few_mechs(topology_st):
     """Test that we can successfully set multiple values to nsslapd-allowed-sasl-mechanisms
 
