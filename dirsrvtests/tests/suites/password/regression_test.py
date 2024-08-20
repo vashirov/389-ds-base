@@ -9,6 +9,7 @@ import pytest
 import time
 import glob
 import base64
+import subprocess
 from lib389._constants import PASSWORD, DN_DM, DEFAULT_SUFFIX
 from lib389._constants import SUFFIX, PASSWORD, DN_DM, DN_CONFIG, PLUGIN_RETRO_CHANGELOG, DEFAULT_SUFFIX, DEFAULT_CHANGELOG_DB
 from lib389 import Entry
@@ -328,8 +329,34 @@ def test_unhashed_pw_switch(topo_supplier):
         # Add debugging steps(if any)...
         pass
 
+
+def _set_stop_timeout(inst, timeout):
+    service_config = f"[Service]\nTimeoutStopSec={int(timeout)}"
+    drop_in_path = f"/etc/systemd/system/dirsrv@{inst.serverid}.service.d/"
+    os.makedirs(drop_in_path, exist_ok=True)
+    with open(os.path.join(drop_in_path, "stop_timeout.conf"), 'w') as f:
+        f.write(service_config)
+    subprocess.run(['systemctl', 'daemon-reload'], check=True)
+
+def _remove_drop_in(inst):
+    drop_in_path = f"/etc/systemd/system/dirsrv@{inst.serverid}.service.d/"
+    os.remove(os.path.join(drop_in_path, "stop_timeout.conf"))
+    subprocess.run(['systemctl', 'daemon-reload'], check=True)
+
+
+@pytest.fixture(scope="module")
+def custom_timeout(request, topo):
+    _set_stop_timeout(topo.standalone, 5)
+
+    def fin():
+        topo.standalone.stop()
+        _remove_drop_in(topo.standalone)
+
+    request.addfinalizer(fin)
+
+
 @pytest.mark.parametrize("scheme", SUPPORTED_SCHEMES )
-def test_long_hashed_password(topo, create_user, scheme):
+def test_long_hashed_password(topo, scheme, custom_timeout):
     """Check that hashed password with very long value does not cause trouble
 
     :id: 252a1f76-114b-11ef-8a7a-482ae39447e5
@@ -363,7 +390,7 @@ def test_long_hashed_password(topo, create_user, scheme):
     user2.replace('userpassword', hashed_passwd)
     # Bind on that user using a wrong password
     with pytest.raises(ldap.INVALID_CREDENTIALS):
-        conn = user2.bind(PASSWORD)
+        conn = user2.bind(PASSWORD, timeout=5)
     # Check that instance is still alive
     assert inst.status()
     # Remove the added user

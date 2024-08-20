@@ -884,7 +884,7 @@ class DirSrv(SimpleLDAPObject, object):
         self.state = DIRSRV_STATE_ALLOCATED
 
     def open(self, uri=None, saslmethod=None, sasltoken=None, certdir=None, starttls=False, connOnly=False, reqcert=None,
-                usercert=None, userkey=None):
+                usercert=None, userkey=None, timeout=None):
         '''
             It opens a ldap bound connection to dirsrv so that online
             administrative tasks are possible.  It binds with the binddn
@@ -1002,6 +1002,9 @@ class DirSrv(SimpleLDAPObject, object):
             Do a simple bind
             """
             try:
+                if timeout is not None:
+                    self.set_option(ldap.OPT_NETWORK_TIMEOUT, timeout)
+                    self.set_option(ldap.OPT_TIMEOUT, timeout)
                 self.simple_bind_s(ensure_str(self.binddn), self.bindpw, escapehatch='i am sure')
             except ldap.SERVER_DOWN as e:
                 # TODO add server info in exception
