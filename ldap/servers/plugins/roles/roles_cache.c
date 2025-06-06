@@ -1027,8 +1027,10 @@ roles_check_filter(Slapi_Filter *filter_list)
         /* Single filter */
         if (slapi_filter_get_attribute_type(filter_list, &type) == 0) {
             if (strcasecmp(type, NSROLEATTR) == 0) {
+                slapi_ch_free_string(&type);
                 return -1;
             }
+            slapi_ch_free_string(&type);
         }
     }
     for (; f != NULL; f = slapi_filter_list_next(filter_list, f)) {
@@ -1037,18 +1039,22 @@ roles_check_filter(Slapi_Filter *filter_list)
             /* Another filter list - recurse */
             if (roles_check_filter(f) == -1) {
                 /* Done, break out */
+                slapi_ch_free_string(&type);
                 return -1;
             }
         } else {
             /* Not a filter list, so check the type */
             if (slapi_filter_get_attribute_type(f, &type) == 0) {
                 if (strcasecmp(type, NSROLEATTR) == 0) {
+                    slapi_ch_free_string(&type);
                     return -1;
                 }
+                slapi_ch_free_string(&type);
             }
         }
     }
 
+    slapi_ch_free_string(&type);
     return 0;
 }
 
