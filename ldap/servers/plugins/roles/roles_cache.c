@@ -2163,7 +2163,7 @@ typedef struct {
 static void
 _rewrite_nsrole_component(Slapi_Filter *f, role_substitute_type_arg_t *substitute_arg)
 {
-    char *type;
+    char *type = NULL;
     struct berval *bval;
     char *attrs[3] = {SLAPI_ATTR_OBJECTCLASS, ROLE_FILTER_ATTR_NAME, NULL};
     Slapi_Entry *nsrole_entry = NULL;
@@ -2236,6 +2236,7 @@ _rewrite_nsrole_component(Slapi_Filter *f, role_substitute_type_arg_t *substitut
     }
 
 bail:
+    slapi_ch_free_string(&type);
     slapi_ch_free_string(&rolefilter);
     slapi_ch_array_free(oc_values);
     slapi_entry_free(nsrole_entry);
