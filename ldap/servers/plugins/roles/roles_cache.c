@@ -2250,8 +2250,8 @@ bail:
 static int
 role_substitute_type(Slapi_Filter *f, void *arg)
 {
-    role_substitute_type_arg_t *substitute_arg = (role_substitute_type_arg_t *) arg;
-    char *filter_type;
+    role_substitute_type_arg_t *substitute_arg = (role_substitute_type_arg_t *)arg;
+    char *filter_type = NULL;
 
     if ((substitute_arg == NULL) ||
         (substitute_arg->attrtype_from == NULL) ||
@@ -2271,9 +2271,10 @@ role_substitute_type(Slapi_Filter *f, void *arg)
      * Substitute 'from' by 'to' attribute type in the filter
      */
     if (slapi_filter_get_attribute_type(f, &filter_type) == 0) {
-            if ((strcasecmp(filter_type, substitute_arg->attrtype_from) == 0)) {
-                _rewrite_nsrole_component(f, substitute_arg);
-            }
+        if ((strcasecmp(filter_type, substitute_arg->attrtype_from) == 0)) {
+            _rewrite_nsrole_component(f, substitute_arg);
+        }
+        slapi_ch_free_string(&filter_type);
     }
 
     /* Return continue because we should
