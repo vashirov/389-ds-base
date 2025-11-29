@@ -9,6 +9,7 @@ from decimal import *
 import ldap
 import logging
 import os
+import pwd
 import pytest
 import threading
 import time
@@ -849,6 +850,9 @@ def test_ldif_missing_suffix_entry(topo, request, verify):
                     fout.write(line)
 
         os.chmod(e.ldif, 0o644)
+        # Make sure dirsrv user can read the file for offline import
+        dirsrv_user = pwd.getpwnam('dirsrv')
+        os.chown(e.ldif, dirsrv_user.pw_uid, dirsrv_user.pw_gid)
 
         # 10. Offline import using backend name ou=people subtree
         e.run(far_suffix_off)

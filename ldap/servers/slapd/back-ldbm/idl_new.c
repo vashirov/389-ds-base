@@ -200,9 +200,7 @@ idl_new_fetch(
     memset(&dataret, 0, sizeof(dataret));
 
     dblayer_txn_init(li, &s_txn);
-    if (txn) {
-        dblayer_read_txn_begin(be, txn, &s_txn);
-    }
+    dblayer_read_txn_begin(be, txn, &s_txn);
 
     /* Make a cursor */
     ret = dblayer_new_cursor(be, db, s_txn.back_txn_txn, &cursor);
@@ -470,9 +468,7 @@ idl_new_range_fetch(
     }
 
     dblayer_txn_init(li, &s_txn);
-    if (txn) {
-        dblayer_read_txn_begin(be, txn, &s_txn);
-    }
+    dblayer_read_txn_begin(be, txn, &s_txn);
 
     /* Make a cursor */
     ret = dblayer_new_cursor(be, db, s_txn.back_txn_txn, &cursor);
