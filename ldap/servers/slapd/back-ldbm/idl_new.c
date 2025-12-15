@@ -165,7 +165,12 @@ idl_new_fetch(
      * internal functions (e.g., negative size passed to memmove).
      */
     dblayer_txn_init(li, &s_txn);
-    dblayer_read_txn_begin(be, txn, &s_txn);
+    if (db->dbenv != NULL && dblayer_db_uses_transactions(db->dbenv)) {
+        dblayer_read_txn_begin(be, txn, &s_txn);
+    } else {
+        /* db's environment doesn't support transactions - don't use any */
+        s_txn.back_txn_txn = NULL;
+    }
 
     /* Make a cursor */
     ret = db->cursor(db, s_txn.back_txn_txn, &cursor, 0);
@@ -415,7 +420,12 @@ idl_new_range_fetch(
      * internal functions (e.g., negative size passed to memmove).
      */
     dblayer_txn_init(li, &s_txn);
-    dblayer_read_txn_begin(be, txn, &s_txn);
+    if (db->dbenv != NULL && dblayer_db_uses_transactions(db->dbenv)) {
+        dblayer_read_txn_begin(be, txn, &s_txn);
+    } else {
+        /* db's environment doesn't support transactions - don't use any */
+        s_txn.back_txn_txn = NULL;
+    }
 
     /* Make a cursor */
     ret = db->cursor(db, s_txn.back_txn_txn, &cursor, 0);
