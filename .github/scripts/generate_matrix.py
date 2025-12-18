@@ -3,6 +3,9 @@ import os
 import glob
 import json
 
+# TODO: Remove this limit after testing
+TEST_SUITES_LIMIT = ['automember_plugin', 'basic', 'config', 'schema']
+
 
 def get_suites(test_args):
     """Get list of test suites to run."""
@@ -26,6 +29,10 @@ def get_suites(test_args):
     suites += [repl_test.replace('dirsrvtests/tests/suites/', '') for repl_test in repl_tests]
     suites.sort()
 
+    # TODO: Remove this filter after testing
+    if TEST_SUITES_LIMIT:
+        suites = [s for s in suites if s in TEST_SUITES_LIMIT]
+
     return suites
 
 
@@ -48,8 +55,8 @@ def main():
         db_libs = ['bdb', 'mdb']
         suites_list = [
             {"db_lib": db_lib, "suite": suite}
-            for db_lib in db_libs
             for suite in suites
+            for db_lib in db_libs
         ]
     else:
         # Original behavior: just suites

@@ -57,6 +57,9 @@ jobs:
       - name: Add GITHUB_WORKSPACE as a safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
+      - name: Set short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build RPMs with ASAN
         run: SKIP_AUDIT_CI=1 WITHOUT_ROBDB=1 ASAN_ON=1 make -f rpm.mk dist-bz2 rpms
 
@@ -66,7 +69,7 @@ jobs:
       - name: Upload RPMs
         uses: actions/upload-artifact@v6
         with:
-          name: rpms-asan
+          name: rpms-asan-${{ env.SHORT_SHA }}-${{ github.run_id }}
           path: dist.tar
 
   test:
@@ -80,6 +83,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v6
+
+    - name: Set short SHA
+      run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
@@ -113,7 +119,7 @@ jobs:
     - name: Download RPMs
       uses: actions/download-artifact@v5
       with:
-        name: rpms-asan
+        name: rpms-asan-${{ env.SHORT_SHA }}-${{ github.run_id }}
 
     - name: Extract RPMs
       run: tar xvf dist.tar
@@ -155,7 +161,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v6
       with:
-        name: pytest-asan-${{ matrix.db_lib }}-${{ env.PYTEST_SUITE }}
+        name: pytest-asan-${{ matrix.db_lib }}-${{ env.PYTEST_SUITE }}-${{ env.SHORT_SHA }}-${{ github.run_id }}
         path: |
           pytest.xml
           pytest.html
