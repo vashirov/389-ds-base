@@ -131,8 +131,8 @@ class ECDSA_Certificate:
             .issuer_name(ca.issuer)
             .public_key(ca.pkey.public_key())
             .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.datetime.now(datetime.UTC))
-            .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=validity_days))
+            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+            .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=validity_days))
             # CA certificate extensions
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=0),
@@ -225,8 +225,8 @@ class ECDSA_Certificate:
             .issuer_name(ca.issuer)
             .public_key(ca.pkey.public_key())
             .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.datetime.now(datetime.UTC))
-            .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=validity_days))
+            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+            .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=validity_days))
             # CA certificate extensions
             .add_extension(
                 x509.BasicConstraints(ca=True, path_length=0),
@@ -289,8 +289,8 @@ class ECDSA_Certificate:
             .issuer_name(cert.issuer)
             .public_key(cert.pkey.public_key())
             .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.datetime.now(datetime.UTC))
-            .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=validity_days))
+            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
+            .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=validity_days))
             # Server certificate extensions
             .add_extension(
                 x509.BasicConstraints(ca=False, path_length=None),
