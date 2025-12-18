@@ -70,7 +70,7 @@ jobs:
           path: dist.tar
 
   test:
-    name: ${{ matrix.db_lib == 'bdb' && 'BDB' || 'LMDB' }} Test - ${{ matrix.suite }}
+    name: ${{ matrix.suite }} - ${{ matrix.db_lib == 'bdb' && 'BDB' || 'LMDB' }} Test
     runs-on: ubuntu-24.04
     needs: [setup, build]
     strategy:
