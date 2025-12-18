@@ -1,23 +1,22 @@
+import argparse
 import os
-import sys
 import glob
 import json
 
-# If we have arguments passed to the script, use them as the test names to run
-if len(sys.argv) > 1:
-    suites = sys.argv[1:]
-    valid_suites = []
-    # Validate if the path is a valid file or directory with files
-    for suite in suites:
-        test_path = os.path.join("dirsrvtests/tests/suites/", suite)
-        if os.path.exists(test_path) and not os.path.islink(test_path):
-            if os.path.isfile(test_path) and test_path.endswith(".py"):
-                valid_suites.append(suite)
-            elif os.path.isdir(test_path):
-                valid_suites.append(suite)
-    suites = valid_suites
 
-else:
+def get_suites(test_args):
+    """Get list of test suites to run."""
+    if test_args:
+        valid_suites = []
+        for suite in test_args:
+            test_path = os.path.join("dirsrvtests/tests/suites/", suite)
+            if os.path.exists(test_path) and not os.path.islink(test_path):
+                if os.path.isfile(test_path) and test_path.endswith(".py"):
+                    valid_suites.append(suite)
+                elif os.path.isdir(test_path):
+                    valid_suites.append(suite)
+        return valid_suites
+
     # Use tests from the source
     suites = next(os.walk('dirsrvtests/tests/suites/'))[1]
 
@@ -27,8 +26,38 @@ else:
     suites += [repl_test.replace('dirsrvtests/tests/suites/', '') for repl_test in repl_tests]
     suites.sort()
 
-suites_list = [{ "suite": suite} for suite in suites]
-matrix = {"include": suites_list}
+    return suites
 
-print(json.dumps(matrix))
 
+def main():
+    parser = argparse.ArgumentParser(description='Generate GitHub Actions test matrix')
+    parser.add_argument('--with-db-libs', action='store_true',
+                        help='Include db_lib (bdb, mdb) in the matrix')
+    parser.add_argument('tests', nargs='*', default=[],
+                        help='Specific test suites or modules to run')
+
+    args = parser.parse_args()
+
+    # Filter out 'false' which comes from workflow_dispatch default
+    test_args = [t for t in args.tests if t and t != 'false']
+
+    suites = get_suites(test_args)
+
+    if args.with_db_libs:
+        # Generate combined matrix with both db_lib and suite
+        db_libs = ['bdb', 'mdb']
+        suites_list = [
+            {"db_lib": db_lib, "suite": suite}
+            for db_lib in db_libs
+            for suite in suites
+        ]
+    else:
+        # Original behavior: just suites
+        suites_list = [{"suite": suite} for suite in suites]
+
+    matrix = {"include": suites_list}
+    print(json.dumps(matrix))
+
+
+if __name__ == '__main__':
+    main()

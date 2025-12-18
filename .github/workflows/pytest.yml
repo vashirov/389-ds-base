@@ -26,47 +26,60 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-22.04
+  setup:
+    name: Setup Test Matrix
+    runs-on: ubuntu-24.04
     container:
       image: quay.io/389ds/ci-images:test
     outputs:
-        matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Add GITHUB_WORKSPACE as a safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Get a list of all test suites
+      - name: Generate combined test matrix
         id: set-matrix
-        run: echo "matrix=$(python3 .github/scripts/generate_matrix.py ${{ github.event.inputs.pytest_tests }})" >>$GITHUB_OUTPUT
+        run: echo "matrix=$(python3 .github/scripts/generate_matrix.py --with-db-libs ${{ github.event.inputs.pytest_tests }})" >>$GITHUB_OUTPUT
+
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    needs: setup
+    container:
+      image: quay.io/389ds/ci-images:test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Add GITHUB_WORKSPACE as a safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Build RPMs
-        run: SKIP_AUDIT_CI=1 make -f rpm.mk dist-bz2 rpms
+        run: SKIP_AUDIT_CI=1 WITHOUT_ROBDB=1 make -f rpm.mk dist-bz2 rpms
 
       - name: Tar build artifacts
         run: tar -cvf dist.tar dist/
 
       - name: Upload RPMs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: rpms
           path: dist.tar
 
   test:
-    name: BDB Test
-    runs-on: ubuntu-22.04
-    needs: build
+    name: ${{ matrix.db_lib == 'bdb' && 'BDB' || 'LMDB' }} Test - ${{ matrix.suite }}
+    runs-on: ubuntu-24.04
+    needs: [setup, build]
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
@@ -98,7 +111,7 @@ jobs:
         df -h
 
     - name: Download RPMs
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: rpms
 
@@ -120,12 +133,12 @@ jobs:
         sudo docker exec $CID sh -c "systemctl enable --now cockpit.socket"
         sudo docker exec $CID sh -c "mkdir -p /workspace/assets/cores && chmod 777 /workspace{,/assets{,/cores}}"
         sudo docker exec $CID sh -c "echo '/workspace/assets/cores/core.%e.%P' > /proc/sys/kernel/core_pattern"
-        if sudo docker exec $CID sh -c "test -f /usr/lib64/dirsrv/librobdb.so"
+        if [ "${{ matrix.db_lib }}" = "bdb" ] && sudo docker exec $CID sh -c "test -f /usr/lib64/dirsrv/librobdb.so"
         then
             echo "Tests skipped because read-only Berkeley Database is installed." > pytest.html
-            echo "<?xml version="1.0" encoding="utf-8"?>'Tests skipped because read-only Berkeley Database is installed.'" > pytest.xml
+            echo "<?xml version=\"1.0\" encoding=\"utf-8\"?><testsuites><testsuite name=\"skipped\"><testcase name=\"robdb\"><skipped message=\"Tests skipped because read-only Berkeley Database is installed.\"/></testcase></testsuite></testsuites>" > pytest.xml
         else
-            sudo docker exec -e WEBUI=1 -e NSSLAPD_DB_LIB=bdb -e DEBUG=pw:api -e PASSWD="${PASSWD}" $CID py.test  --suppress-no-test-exit-code  -m "not flaky" --junit-xml=pytest.xml --html=pytest.html --browser=firefox --browser=chromium -v dirsrvtests/tests/suites/${{ matrix.suite }}
+            sudo docker exec -e WEBUI=1 -e NSSLAPD_DB_LIB=${{ matrix.db_lib }} -e DEBUG=pw:api -e PASSWD="${PASSWD}" $CID py.test  --suppress-no-test-exit-code  -m "not flaky" --junit-xml=pytest.xml --html=pytest.html --browser=firefox --browser=chromium -v dirsrvtests/tests/suites/${{ matrix.suite }}
         fi
 
     - name: Make the results file readable by all
@@ -133,17 +146,17 @@ jobs:
       run: |
         sudo chmod -f -v -R a+r pytest.*ml assets
         sudo chmod -f -v a+x assets
+
     - name: Sanitize filename
       if: always()
       run: echo "PYTEST_SUITE=$(echo ${{ matrix.suite }} | sed -e 's#\/#-#g')" >> $GITHUB_ENV
 
     - name: Upload pytest test results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
-        name: pytest-${{ env.PYTEST_SUITE }}
+        name: pytest-${{ matrix.db_lib }}-${{ env.PYTEST_SUITE }}
         path: |
           pytest.xml
           pytest.html
           assets
-
