@@ -62,7 +62,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
-    "@patternfly/patternfly": "5.4.1",
+    "@patternfly/patternfly": "5.4.2",
     "@patternfly/react-charts": "7.4.3",
     "@patternfly/react-core": "5.4.1",
     "@patternfly/react-icons": "5.4.0",
