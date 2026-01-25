@@ -463,7 +463,7 @@ dbmdb_import_free_ldif(ldif_context *c)
 }
 
 static char *
-dbmdb_import_get_entry(ldif_context *c, int fd, int *lineno)
+dbmdb_import_get_entry(ldif_context *c, int fd, int *lineno, size_t *datalen)
 {
     int ret;
     int done = 0, got_lf = 0;
@@ -488,7 +488,13 @@ dbmdb_import_get_entry(ldif_context *c, int fd, int *lineno)
                 if (buf) {
                     /* last entry */
                     buf[bufOffset] = 0;
+                    if (datalen) {
+                        *datalen = bufOffset;
+                    }
                     return buf;
+                }
+                if (datalen) {
+                    *datalen = 0;
                 }
                 return NULL;
             } else {
@@ -556,7 +562,22 @@ dbmdb_import_get_entry(ldif_context *c, int fd, int *lineno)
         /* (first, make sure the output buffer is large enough) */
         if (bufSize - bufOffset < i - c->offset + 1) {
             char *newbuf = NULL;
-            size_t newsize = (buf ? bufSize * 2 : LDIF_BUFFER_SIZE);
+            size_t needed = bufOffset + (i - c->offset) + 1;
+            size_t newsize;
+            
+            /* Optimize buffer growth: grow to at least what we need plus headroom,
+             * but use exponential growth to reduce allocations for large entries.
+             * This avoids O(n log n) behavior for large entries while still being
+             * efficient for small ones. */
+            if (!buf) {
+                newsize = LDIF_BUFFER_SIZE;
+            } else if (needed <= bufSize * 2) {
+                /* Double the buffer if that's enough */
+                newsize = bufSize * 2;
+            } else {
+                /* For large entries, grow to needed size + 25% headroom */
+                newsize = needed + (needed / 4);
+            }
 
             newbuf = slapi_ch_malloc(newsize);
             /* copy over the old data (if there was any) */
@@ -571,6 +592,9 @@ dbmdb_import_get_entry(ldif_context *c, int fd, int *lineno)
             /* Test always false (buf get initialized in first iteration
              * but it makes gcc -fanalyzer happy
              */
+            if (datalen) {
+                *datalen = 0;
+            }
             return NULL;
         }
         memmove(buf + bufOffset, c->b + c->offset, i - c->offset);
@@ -580,11 +604,17 @@ dbmdb_import_get_entry(ldif_context *c, int fd, int *lineno)
 
     /* add terminating NUL char */
     buf[bufOffset] = 0;
+    if (datalen) {
+        *datalen = bufOffset;
+    }
     return buf;
 
 error:
     if (buf)
         slapi_ch_free((void **)&buf);
+    if (datalen) {
+        *datalen = 0;
+    }
     return NULL;
 }
 
@@ -1239,15 +1269,14 @@ dbmdb_import_producer(void *param)
         wqelmt.winfo.job = job;
         wqelmt.wait_id = id;
         wqelmt.lineno = curr_lineno + 1;  /* Human tends to start counting from 1 rather than 0 */
-        wqelmt.data = dbmdb_import_get_entry(&c, fd, &curr_lineno);
+        wqelmt.data = dbmdb_import_get_entry(&c, fd, &curr_lineno, &wqelmt.datalen);
         wqelmt.nblines = curr_lineno - wqelmt.lineno;
-        wqelmt.datalen = 0;
         if (!wqelmt.data) {
             /* error reading entry, or end of file */
             detected_eof = 1;
             continue;
         }
-        wqelmt.datalen = strlen(wqelmt.data);
+        /* datalen is now set by dbmdb_import_get_entry, no need for strlen */
         wqelmt.dnrc = dbmdb_import_entry_info_by_ldifentry(dndb, &wqelmt);
         switch (wqelmt.dnrc) {
             default:
@@ -3704,7 +3733,7 @@ dbmdb_read_ldif_entries(struct ldbminfo *li, char *src_dir, char *file_name)
         goto out;
     }
 
-    while ((estr = dbmdb_import_get_entry(&c, fd, &curr_lineno))) {
+    while ((estr = dbmdb_import_get_entry(&c, fd, &curr_lineno, NULL))) {
         Slapi_Entry *e = slapi_str2entry(estr, 0);
         slapi_ch_free_string(&estr);
         if (!e) {

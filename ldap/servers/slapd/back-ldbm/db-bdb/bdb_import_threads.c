@@ -133,7 +133,7 @@ bdb_import_free_ldif(ldif_context *c)
 }
 
 static char *
-bdb_import_get_entry(ldif_context *c, int fd, int *lineno)
+bdb_import_get_entry(ldif_context *c, int fd, int *lineno, size_t *datalen)
 {
     int ret;
     int done = 0, got_lf = 0;
@@ -159,7 +159,13 @@ bdb_import_get_entry(ldif_context *c, int fd, int *lineno)
                 if (buf) {
                     /* last entry */
                     buf[bufOffset] = 0;
+                    if (datalen) {
+                        *datalen = bufOffset;
+                    }
                     return buf;
+                }
+                if (datalen) {
+                    *datalen = 0;
                 }
                 return NULL;
             } else {
@@ -225,9 +231,24 @@ bdb_import_get_entry(ldif_context *c, int fd, int *lineno)
 
         /* copy what we did so far into the output buffer */
         /* (first, make sure the output buffer is large enough) */
-        while (bufSize - bufOffset < i - c->offset + 1) {
+        if (bufSize - bufOffset < i - c->offset + 1) {
             char *newbuf = NULL;
-            size_t newsize = (buf ? bufSize * 2 : LDIF_BUFFER_SIZE);
+            size_t needed = bufOffset + (i - c->offset) + 1;
+            size_t newsize;
+            
+            /* Optimize buffer growth: grow to at least what we need plus headroom,
+             * but use exponential growth to reduce allocations for large entries.
+             * This avoids O(n log n) behavior for large entries while still being
+             * efficient for small ones. */
+            if (!buf) {
+                newsize = LDIF_BUFFER_SIZE;
+            } else if (needed <= bufSize * 2) {
+                /* Double the buffer if that's enough */
+                newsize = bufSize * 2;
+            } else {
+                /* For large entries, grow to needed size + 25% headroom */
+                newsize = needed + (needed / 4);
+            }
 
             newbuf = slapi_ch_malloc(newsize);
             if (!newbuf)
@@ -249,11 +270,17 @@ bdb_import_get_entry(ldif_context *c, int fd, int *lineno)
 
     /* add terminating NUL char */
     buf[bufOffset] = 0;
+    if (datalen) {
+        *datalen = bufOffset;
+    }
     return buf;
 
 error:
     if (buf)
         slapi_ch_free((void **)&buf);
+    if (datalen) {
+        *datalen = 0;
+    }
     return NULL;
 }
 
@@ -478,7 +505,7 @@ bdb_import_producer(void *param)
         info->state = RUNNING;
 
         prev_lineno = curr_lineno;
-        estr = bdb_import_get_entry(&c, fd, &curr_lineno);
+        estr = bdb_import_get_entry(&c, fd, &curr_lineno, NULL);
 
         lines_in_entry = curr_lineno - prev_lineno;
         if (!estr) {
@@ -3528,7 +3555,7 @@ bdb_dse_conf_verify_core(struct ldbminfo *li, char *src_dir, char *file_name, ch
     while (!finished) {
         char *estr = NULL;
         Slapi_Entry *e = NULL;
-        estr = bdb_import_get_entry(&c, fd, &curr_lineno);
+        estr = bdb_import_get_entry(&c, fd, &curr_lineno, NULL);
 
         if (!estr)
             break;
