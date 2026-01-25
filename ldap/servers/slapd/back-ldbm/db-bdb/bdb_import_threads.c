@@ -242,7 +242,8 @@ bdb_import_get_entry(ldif_context *c, int fd, int *lineno, size_t *datalen)
              * This avoids O(n log n) behavior for large entries while still being
              * efficient for small ones. */
             if (!buf) {
-                newsize = LDIF_BUFFER_SIZE;
+                /* Initial allocation: use at least LDIF_BUFFER_SIZE, or more if needed */
+                newsize = (needed > LDIF_BUFFER_SIZE) ? needed : LDIF_BUFFER_SIZE;
             } else if (needed <= bufSize * 2) {
                 /* Double the buffer if that's enough */
                 newsize = bufSize * 2;
@@ -256,6 +257,11 @@ bdb_import_get_entry(ldif_context *c, int fd, int *lineno, size_t *datalen)
                 } else {
                     newsize = needed + headroom;
                 }
+            }
+
+            /* Ensure the new size is always at least what we need */
+            if (newsize < needed) {
+                newsize = needed;
             }
 
             newbuf = slapi_ch_malloc(newsize);
