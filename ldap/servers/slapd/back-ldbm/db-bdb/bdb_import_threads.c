@@ -19,6 +19,7 @@
  * a wire import (aka "fast replica" import) won't have a producer thread.
  */
 
+#include <stdint.h>
 #include "bdb_layer.h"
 #include "../vlv_srch.h"
 
@@ -249,7 +250,7 @@ bdb_import_get_entry(ldif_context *c, int fd, int *lineno, size_t *datalen)
                 /* For large entries, grow to needed size + 25% headroom.
                  * Check for overflow to prevent integer wraparound. */
                 size_t headroom = needed / 4;
-                if (headroom > (size_t)-1 - needed) {
+                if (headroom > SIZE_MAX - needed) {
                     /* Overflow would occur, just use needed size */
                     newsize = needed;
                 } else {
