@@ -575,8 +575,15 @@ dbmdb_import_get_entry(ldif_context *c, int fd, int *lineno, size_t *datalen)
                 /* Double the buffer if that's enough */
                 newsize = bufSize * 2;
             } else {
-                /* For large entries, grow to needed size + 25% headroom */
-                newsize = needed + (needed / 4);
+                /* For large entries, grow to needed size + 25% headroom.
+                 * Check for overflow to prevent integer wraparound. */
+                size_t headroom = needed / 4;
+                if (headroom > (size_t)-1 - needed) {
+                    /* Overflow would occur, just use needed size */
+                    newsize = needed;
+                } else {
+                    newsize = needed + headroom;
+                }
             }
 
             newbuf = slapi_ch_malloc(newsize);
