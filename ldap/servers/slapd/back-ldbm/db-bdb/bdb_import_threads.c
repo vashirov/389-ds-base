@@ -232,6 +232,9 @@ bdb_import_get_entry(ldif_context *c, int fd, int *lineno, size_t *datalen)
 
         /* copy what we did so far into the output buffer */
         /* (first, make sure the output buffer is large enough) */
+        /* Note: while loop is used for defensive programming, though the algorithm
+         * below guarantees only one iteration due to the safety check ensuring
+         * newsize >= needed. */
         while (bufSize - bufOffset < i - c->offset + 1) {
             char *newbuf = NULL;
             size_t needed = bufOffset + (i - c->offset) + 1;
