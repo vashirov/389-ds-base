@@ -696,7 +696,11 @@ struct ldbminfo
 #define LI_BDB_IMPL         0x20
 #define LI_LMDB_IMPL        0x40
 
+#ifdef WITHOUT_BDB
+#define LI_DEFAULT_IMPL_FLAG  LI_LMDB_IMPL /* BDB is disabled, default to LMDB */
+#else
 #define LI_DEFAULT_IMPL_FLAG  LI_BDB_IMPL /* the default is BDB for now */
+#endif
 
 typedef enum {
     BTXNACT_INDEX_ADD,            /* data is a index_update_t */

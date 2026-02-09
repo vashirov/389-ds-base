@@ -283,10 +283,18 @@ ldbm_config_backend_implement_set(void *arg, void *value, char *errorbuf __attri
     struct ldbminfo *li = (struct ldbminfo *)arg;
     int retval = LDAP_SUCCESS;
 
+#ifdef WITHOUT_BDB
+    if (strcasecmp(value, LMDB_IMPL)) {
+        slapi_log_err(SLAPI_LOG_ERR, "ldbm_config_backend_implement_set",
+                      "Invalid db implementation value. Only %s is supported (built without BDB support).\n", LMDB_IMPL);
+        return LDAP_UNWILLING_TO_PERFORM;
+    }
+#else
     if (strcasecmp(value, BDB_IMPL) && strcasecmp(value, LMDB_IMPL)) {
         slapi_log_err(SLAPI_LOG_ERR, "ldbm_config_backend_implement_set", "Invalid db implementation value. It should be %s or %s.\n", BDB_IMPL, LMDB_IMPL);
         return LDAP_UNWILLING_TO_PERFORM;
     }
+#endif
 
     if (apply) {
         slapi_ch_free((void **)&(li->li_backend_implement));

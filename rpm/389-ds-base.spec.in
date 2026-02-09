@@ -26,8 +26,14 @@
 %bcond repl_reports 1
 %endif
 
+%bcond bdb 0
+
+%if %{with bdb}
 %if 0%{?fedora} >= 43
 %bcond libbdb_ro 1
+%else
+%bcond libbdb_ro 0
+%endif
 %else
 %bcond libbdb_ro 0
 %endif
@@ -118,9 +124,11 @@ BuildRequires:    libtsan
 BuildRequires:    libubsan
 %endif
 %endif
+%if %{with bdb}
 %if %{without libbdb_ro}
 %if %{without bundle_libdb}
 BuildRequires:    libdb-devel
+%endif
 %endif
 %endif
 
@@ -181,6 +189,7 @@ Requires:         cyrus-sasl-md5
 # This is optionally supported by us, as we use it in our tests
 Requires:         cyrus-sasl-plain
 # this is needed for backldbm
+%if %{with bdb}
 %if %{with libbdb_ro}
 Requires:         %{name}-robdb-libs = %{version}-%{release}
 %else
@@ -188,13 +197,16 @@ Requires:         %{name}-robdb-libs = %{version}-%{release}
 Requires:         libdb
 %endif
 %endif
+%endif
 Requires:         lmdb
 # This picks up libperl.so as a Requires, so we add this versioned one
 Requires:         perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 # Needed by logconv.pl
+%if %{with bdb}
 %if %{without libbdb_ro}
 %if %{without bundle_libdb}
 Requires:         perl-DB_File
+%endif
 %endif
 %endif
 Requires:         perl-Archive-Tar
@@ -218,8 +230,10 @@ Source2:          %{name}-devel.README
 %if %{with bundle_jemalloc}
 Source3:          https://github.com/jemalloc/%{jemalloc_name}/releases/download/%{jemalloc_ver}/%{jemalloc_name}-%{jemalloc_ver}.tar.bz2
 %endif
+%if %{with bdb}
 %if %{with bundle_libdb}
 Source4:          https://fedorapeople.org/groups/389ds/libdb-5.3.28-59.tar.bz2
+%endif
 %endif
 
 %description
@@ -231,6 +245,7 @@ isn't what you want. Please contact support immediately.
 Please see http://seclists.org/oss-sec/2016/q1/363 for more information.
 %endif
 
+%if %{with bdb}
 %if %{with libbdb_ro}
 %package        robdb-libs
 Summary:        Read-only Berkeley Database Library
@@ -240,6 +255,7 @@ License:        GPL-2.0-or-later OR LGPL-2.1-or-later
 The %{name}-robdb-lib package contains a library derived from rpm
 project (https://github.com/rpm-software-management/rpm) that provides
 some basic functions to search and read Berkeley Database records
+%endif
 %endif
 
 
@@ -303,6 +319,7 @@ Obsoletes:        %{name} <= 1.3.5.4
 %description      snmp
 SNMP Agent for the 389 Directory Server base package.
 
+%if %{with bdb}
 %if %{with bundle_libdb}
 %package          bdb
 Summary:          Berkeley Database backend for 389 Directory Server
@@ -319,6 +336,7 @@ Provides:         deprecated()
 Berkeley Database backend for 389 Directory Server
 Warning! This backend is deprecated in favor of lmdb and its support
 may be removed in future versions.
+%endif
 %endif
 
 %package -n python%{python3_pkgversion}-lib389
@@ -378,8 +396,10 @@ cd src/lib389
 %setup -q -n %{name}-%{version} -T -D -b 3
 %endif
 
+%if %{with bdb}
 %if %{with bundle_libdb}
 %setup -q -n %{name}-%{version} -T -D -b 4
+%endif
 %endif
 
 cp %{SOURCE2} README.devel
@@ -443,6 +463,7 @@ popd
 %endif
 
 # Build custom libdb package
+%if %{with bdb}
 %if %{with bundle_libdb}
 mkdir -p ../%{libdb_base_version}
 pushd ../%{libdb_base_version}
@@ -451,18 +472,21 @@ mv %{libdb_full_version} SOURCES
 rpmbuild  --define "_topdir $PWD" -bc %{_builddir}/%{name}-%{version}/rpm/bundle-libdb.spec
 popd
 %endif
+%endif
 
 # Rebuild the autotool artifacts now.
 autoreconf -fiv
 
 %configure \
+%if %{with bdb}
 %if %{with libbdb_ro}
           --with-libbdb-ro \
 %else
-          --without-libbdb-ro \
+          --with-bdb \
 %endif
 %if %{with bundle_libdb}
            --with-bundle-libdb=%{_builddir}/%{libdb_base_version}/BUILD/%{libdb_base_dir}/dist/dist-tls \
+%endif
 %endif
            --with-selinux $TMPFILES_FLAG \
            --with-systemd \
@@ -506,8 +530,10 @@ find %{buildroot}%{_datadir}/cockpit/389-console -type f | sed -e "s@%{buildroot
 %endif
 
 find %{buildroot}%{_libdir}/%{pkgname}/plugins/ -type f -iname 'lib*.so' | sed -e "s@%{buildroot}@@" > plugins.list
+%if %{with bdb}
 %if %{with bundle_libdb}
 sed -i -e "/libback-bdb/d" plugins.list
+%endif
 %endif
 
 # Copy in our docs from doxygen.
@@ -555,6 +581,7 @@ cp -pa README ../%{name}-%{version}/README.jemalloc
 popd
 %endif
 
+%if %{with bdb}
 %if %{with bundle_libdb}
 pushd ../%{libdb_base_version}
 libdbbuilddir=$PWD/BUILD/%{libdb_base_dir}
@@ -565,7 +592,9 @@ cp -pa $libdbbuilddir/lgpl-2.1.txt $libdbdestdir/lgpl-2.1.txt.libdb
 cp -pa $libdbbuilddir/dist/dist-tls/.libs/%{libdb_bundle_name} $RPM_BUILD_ROOT%{_libdir}/%{pkgname}/%{libdb_bundle_name}
 popd
 %endif
+%endif
 
+%if %{with bdb}
 %if %{with libbdb_ro}
 pushd lib/librobdb
 cp -pa COPYING %{_builddir}/%{name}-%{version}/COPYING.librobdb
@@ -580,6 +609,7 @@ install -m 0644 $PWD/COPYING.RPM %{buildroot}/%{_licensedir}/%{name}-robdb-libs/
 install -m 0644 $PWD/COPYING %{buildroot}/%{_licensedir}/%{name}/COPYING.librobdb
 install -m 0644 $PWD/COPYING.RPM %{buildroot}/%{_licensedir}/%{name}/COPYING.RPM
 popd
+%endif
 %endif
 
 %check
@@ -750,8 +780,10 @@ fi
 %exclude %{_libdir}/%{pkgname}/lib/libjemalloc_pic.a
 %exclude %{_libdir}/%{pkgname}/lib/pkgconfig
 %endif
+%if %{with bdb}
 %if %{with libbdb_ro}
 %exclude %{_libdir}/%{pkgname}/librobdb.so
+%endif
 %endif
 
 %files devel
@@ -785,11 +817,13 @@ fi
 %{_mandir}/man1/ldap-agent.1.gz
 %{_unitdir}/%{pkgname}-snmp.service
 
+%if %{with bdb}
 %if %{with bundle_libdb}
 %files bdb
 %doc LICENSE LICENSE.GPLv3+ README.devel LICENSE.libdb README.libdb lgpl-2.1.txt.libdb
 %{_libdir}/%{pkgname}/%{libdb_bundle_name}
 %{_libdir}/%{pkgname}/plugins/libback-bdb.so
+%endif
 %endif
 
 %files -n python%{python3_pkgversion}-lib389 -f %{pyproject_files}
@@ -826,6 +860,7 @@ fi
 %doc README.md
 %endif
 
+%if %{with bdb}
 %if %{with libbdb_ro}
 %files robdb-libs
 %license COPYING.librobdb COPYING.RPM
@@ -835,6 +870,7 @@ fi
 %{_licensedir}/%{name}/COPYING.RPM
 %{_licensedir}/%{name}/COPYING.librobdb
 
+%endif
 %endif
 
 %changelog

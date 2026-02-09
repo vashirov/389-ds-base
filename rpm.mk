@@ -18,16 +18,24 @@ RPMBUILD_OPTIONS += $(if $(filter 1, $(BUNDLE_JEMALLOC)),--with bundle_jemalloc,
 JEMALLOC_URL ?= $(shell rpmspec $(RPMBUILD_OPTIONS) -P $(RPMBUILD)/SPECS/389-ds-base.spec | awk '/^Source3:/ {print $$2}')
 JEMALLOC_TARBALL ?= $(shell basename "$(JEMALLOC_URL)")
 
-BUNDLE_LIBDB ?= 0
-RPMBUILD_OPTIONS += $(if $(filter 1, $(BUNDLE_LIBDB)),--with bundle_libdb,--without bundle_libdb)
-# LIBDB tarball was generated from
-#  https://kojipkgs.fedoraproject.org//packages/libdb/5.3.28/59.fc40/src/libdb-5.3.28-59.fc40.src.rpm
-#  then uploaded in https://fedorapeople.org
-LIBDB_URL ?= $(shell rpmspec $(RPMBUILD_OPTIONS) -P $(RPMBUILD)/SPECS/389-ds-base.spec | awk '/^Source4:/ {print $$2}')
-LIBDB_TARBALL ?= $(shell basename "$(LIBDB_URL)")
+WITH_BDB ?= 0
+RPMBUILD_OPTIONS += $(if $(filter 1, $(WITH_BDB)),--with bdb,--without bdb)
 
-# Check if BUNDLE_BDBREADERS is enabled.
-BUNDLE_BDBREADERS = $(shell ./rpm/is-robdb-used $(BUNDLE_LIBDB))
+BUNDLE_LIBDB ?= 0
+ifeq ($(WITH_BDB), 0)
+  # Force disable BDB-related options when building without BDB
+  override BUNDLE_LIBDB = 0
+  BUNDLE_BDBREADERS = 0
+else
+  # LIBDB tarball was generated from
+  #  https://kojipkgs.fedoraproject.org//packages/libdb/5.3.28/59.fc40/src/libdb-5.3.28-59.fc40.src.rpm
+  #  then uploaded in https://fedorapeople.org
+  LIBDB_URL ?= $(shell rpmspec $(RPMBUILD_OPTIONS) -P $(RPMBUILD)/SPECS/389-ds-base.spec | awk '/^Source4:/ {print $$2}')
+  LIBDB_TARBALL ?= $(shell basename "$(LIBDB_URL)")
+  # Check if BUNDLE_BDBREADERS is enabled.
+  BUNDLE_BDBREADERS = $(shell ./rpm/is-robdb-used $(BUNDLE_LIBDB))
+endif
+RPMBUILD_OPTIONS += $(if $(filter 1, $(BUNDLE_LIBDB)),--with bundle_libdb,--without bundle_libdb)
 RPMBUILD_OPTIONS += $(if $(filter 1, $(BUNDLE_BDBREADERS)),--with libbdb_ro,--without libbdb_ro)
 
 
@@ -178,6 +186,7 @@ rpm: rpms
 patch_rpms: | patch rpms
 
 debug:
+	@echo WITH_BDB=$(WITH_BDB)
 	@echo BUNDLE_JEMALLOC=$(BUNDLE_JEMALLOC)
 	@echo BUNDLE_LIBDB=$(BUNDLE_LIBDB)
 	@echo BUNDLE_BDBREADERS=$(BUNDLE_BDBREADERS)

@@ -183,6 +183,16 @@ not_exporting(void)
 char *
 backend_implement_get_libpath(struct ldbminfo *li, const char *plgname)
 {
+#ifdef WITHOUT_BDB
+    if (strcmp(plgname, BDB_IMPL) == 0) {
+        slapi_log_error(SLAPI_LOG_FATAL, "dblayer_setup",
+                        "BDB backend is not available (built without BDB support)."
+                        " Please use 'mdb' backend instead.\n");
+        exit(1);
+    }
+    /* mdb ==> lets use default (libback-ldbm.so) */
+    return li->li_plugin->plg_libpath;
+#else
     PRLibrary *lib = NULL;
     char *libpath = NULL;
     const char *prefix = getenv(PREFIX_ENV);
@@ -221,6 +231,7 @@ backend_implement_get_libpath(struct ldbminfo *li, const char *plgname)
         exit(1);
     }
     return libpath;
+#endif
 }
 
 int

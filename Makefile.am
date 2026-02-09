@@ -102,6 +102,9 @@ endif
 if WITH_LIBBDB_RO
 DS_DEFINES += -DWITH_LIBBDB_RO=1
 endif
+if WITHOUT_BDB
+DS_DEFINES += -DWITHOUT_BDB=1
+endif
 DS_INCLUDES = -I$(srcdir)/ldap/include -I$(srcdir)/ldap/servers/slapd -I$(srcdir)/include -I.
 
 
@@ -187,6 +190,10 @@ endif
 ldaplib = @ldaplib@
 ldaplib_defs = @ldaplib_defs@
 
+if WITHOUT_BDB
+DB_LINK = -llmdb
+DB_INC =
+else
 if WITH_LIBBDB_RO
 DB_LINK =  @db_lib@ -llmdb
 else
@@ -197,6 +204,7 @@ DB_LINK = @db_lib@ -ldb-@db_libver@ -llmdb
 endif
 endif
 DB_INC = @db_inc@
+endif
 DB_IMPL = libback-ldbm.la
 SASL_LINK = $(SASL_LIBS)
 NETSNMP_LINK = @netsnmp_lib@ @netsnmp_link@
@@ -333,8 +341,10 @@ bin_PROGRAMS = dbscan \
 # ----------------------------------------------------------------------------------------
 
 server_LTLIBRARIES = libslapd.la libldaputil.la libns-dshttpd.la librewriters.la
+if !WITHOUT_BDB
 if WITH_LIBBDB_RO
 server_LTLIBRARIES += librobdb.la
+endif
 endif
 
 lib_LTLIBRARIES = libsvrcore.la
@@ -1206,6 +1216,11 @@ libslapd_la_LDFLAGS = $(AM_LDFLAGS) $(SLAPD_LDFLAGS)
 #------------------------
 # libback-bdb
 #------------------------
+if WITHOUT_BDB
+  DB_BDB_SRCS =
+  DB_BDB_WITHIN_BACKLDBM =
+  ROBDB_INC =
+else
 DB_BDB_SRCS = \
 	@db_bdb_srcdir@/bdb_config.c \
 	@db_bdb_srcdir@/bdb_instance_config.c \
@@ -1240,6 +1255,8 @@ else
   # db-bdb sources are compiled within libback-ldbm.so
   DB_BDB_WITHIN_BACKLDBM = $(DB_BDB_SRCS)
 endif
+endif
+# end of WITHOUT_BDB else
 endif
 
 clean-bdb-ro-src:
@@ -1335,6 +1352,7 @@ libback_ldbm_la_DEPENDENCIES = libslapd.la
 libback_ldbm_la_LIBADD = libslapd.la $(DB_LINK) $(LDAPSDK_LINK) $(NSPR_LINK)
 libback_ldbm_la_LDFLAGS = -avoid-version
 
+if !WITHOUT_BDB
 if WITH_LIBBDB_RO
 libback_ldbm_la_LIBADD += librobdb.la
 libback_ldbm_la_DEPENDENCIES += librobdb.la
@@ -1346,6 +1364,7 @@ librobdb_la_SOURCES =  lib/librobdb/lib/bdb_ro.c
 librobdb_la_CPPFLAGS = $(AM_CPPFLAGS) $(DB_INC)
 librobdb_la_LDFLAGS =  -avoid-version
 librobdb_la_LIBADD =
+endif
 endif
 
 #------------------------

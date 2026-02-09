@@ -969,7 +969,11 @@ usage(char *argv0, int error)
     printf("\n%s - scan a db file and dump the contents\n", p0);
     printf("  common options:\n");
     printf("    -A, --ascii                    dump as ascii data\n");
+#ifdef WITHOUT_BDB
+    printf("    -D, --db-type <dbimpl>         specify db implementaion (may be: mdb)\n");
+#else
     printf("    -D, --db-type <dbimpl>         specify db implementaion (may be: bdb or mdb)\n");
+#endif
     printf("    -f, --dbi <filename>           specify db instance\n");
     printf("    -R, --raw                      dump as raw data\n");
     printf("    -t, --truncate-entry <size>    entry truncate size (bytes)\n");
@@ -1353,9 +1357,11 @@ main(int argc, char **argv)
     char optstring[2*COUNTOF(options)+1] = {0};
 
     if (defdbimpl) {
+#ifndef WITHOUT_BDB
         if (strcasecmp(defdbimpl, "bdb") == 0) {
             dbimpl_name = (char*) "bdb";
         }
+#endif
         if (strcasecmp(defdbimpl, "mdb") == 0) {
             dbimpl_name = (char*) "mdb";
         }
