@@ -449,6 +449,8 @@ def test_retrocl_trimming_entries(topology_st):
     log.info('Enable retro changelog plugin without trimming')
     rcl = RetroChangelogPlugin(inst)
     rcl.enable()
+    rcl.remove_all('nsslapd-changelogmaxage')
+    rcl.remove_all('nsslapd-changelog-trim-interval')
     inst.restart()
 
     log.info('Count existing changelog entries before test')
