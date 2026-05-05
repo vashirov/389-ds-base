@@ -23,7 +23,7 @@ actions:
     - cargo install cargo-license
     - make -f rpm.mk rpmspec
   create-archive:
-    - make -f rpm.mk download-cargo-dependencies tarballs
+    - make WITHOUT_ROBDB=1 -f rpm.mk download-cargo-dependencies tarballs
     - python3 rpm/bundle-rust-npm.py -f src src/cockpit/389-console rpm/389-ds-base.spec
     - "bash -c 'ls -1 dist/sources/389-ds-base*.tar.bz2'"
   get-current-version:
@@ -45,7 +45,34 @@ jobs:
 - job: copr_build
   trigger: pull_request
   targets:
-    - fedora-all
+    fedora-latest-stable:
+      without_opts: [repl_reports, libbdb_ro]
+
+- job: tests
+  trigger: pull_request
+  targets:
+    - fedora-latest-stable
+  identifier: lmdb
+  tmt_plan: /plans/lmdb
+  tf_extra_params:
+    environments:
+      - settings:
+          provisioning:
+            tags:
+              BusinessUnit: 389ds
+
+- job: tests
+  trigger: pull_request
+  targets:
+    - fedora-latest-stable
+  identifier: bdb
+  tmt_plan: /plans/bdb
+  tf_extra_params:
+    environments:
+      - settings:
+          provisioning:
+            tags:
+              BusinessUnit: 389ds
 
 - job: copr_build
   trigger: commit
