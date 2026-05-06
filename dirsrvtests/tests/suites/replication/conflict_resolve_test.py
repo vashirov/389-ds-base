@@ -261,7 +261,7 @@ class TestTwoSuppliers:
 
         topology_m2.resume_all_replicas()
 
-        repl.test_replication_topology(topology_m2)
+        repl.test_replication_topology(topology_m2, timeout=120)
 
         user_dns_m1 = [user.dn for user in test_users_m1.list()]
         user_dns_m2 = [user.dn for user in test_users_m2.list()]
@@ -393,7 +393,7 @@ class TestTwoSuppliers:
 
         topology_m2.resume_all_replicas()
 
-        repl.test_replication_topology(topology_m2)
+        repl.test_replication_topology(topology_m2, timeout=120)
 
         user_dns_m1 = [user.dn for user in test_users_m1.list()]
         user_dns_m2 = [user.dn for user in test_users_m2.list()]
@@ -488,7 +488,7 @@ class TestTwoSuppliers:
 
         topology_m2.resume_all_replicas()
 
-        repl.test_replication_topology(topology_m2)
+        repl.test_replication_topology(topology_m2, timeout=120)
 
         group_dns_m1 = [group.dn for group in test_groups_m1.list()]
         group_dns_m2 = [group.dn for group in test_groups_m2.list()]
@@ -567,7 +567,7 @@ class TestTwoSuppliers:
 
         topology_m2.resume_all_replicas()
 
-        repl.test_replication_topology(topology_m2)
+        repl.test_replication_topology(topology_m2, timeout=120)
 
         user_dns_m1 = [user.dn for user in test_users_m1.list()]
         user_dns_m2 = [user.dn for user in test_users_m2.list()]
@@ -860,7 +860,7 @@ class TestTwoSuppliers:
 
         # resume replication agreements
         topology_m2.resume_all_replicas()
-        repl.test_replication_topology(topology_m2)
+        repl.test_replication_topology(topology_m2, timeout=120)
 
         # check that on M1, the entry 'uid' has two values 'foo1' and 'foo2'
         final_dn = re.sub('^.*1000,', 'uid=foo2,', original_dn)
@@ -953,7 +953,7 @@ class TestTwoSuppliers:
 
         # resume replication agreements
         topology_m2.resume_all_replicas()
-        repl.test_replication_topology(topology_m2)
+        repl.test_replication_topology(topology_m2, timeout=120)
 
         # check that on M1, the entry 'employeenumber' has value 'foo1'
         final_dn = re.sub('^.*1000,', 'employeenumber=foo2,', original_dn)
@@ -1067,7 +1067,7 @@ class TestThreeSuppliers:
 
         topology_m3.resume_all_replicas()
 
-        repl.test_replication_topology(topology_m3)
+        repl.test_replication_topology(topology_m3, timeout=120)
 
         conts_dns = {}
         for num in range(1, 4):

@@ -212,7 +212,7 @@ openssl x509 -text -in client.pem
 ###### INSTALL CERTS ########
 #############################
 
-certdbdir=$PREFIX/etc/dirsrv/slapd-$inst
+certdbdir={certdbdir}
 rm -f $certdbdir/cert9.db $certdbdir/key4.db
 certutil -N -d $certdbdir -f $certdbdir/pwdfile.txt
 
@@ -291,6 +291,7 @@ def test_mldsa(topo):
             'url': f"ldaps://localhost:{inst.sslport}",
             'rootdn': DN_DM,
             'rootpw': PW_DM,
+            'certdbdir': inst.get_cert_dir(),
         }
         with open(scriptname, 'w') as f:
             f.write(script_content.format(**d))
