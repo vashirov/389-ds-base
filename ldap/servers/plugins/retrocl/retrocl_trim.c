@@ -279,10 +279,16 @@ trim_changelog(void)
             }
             if (max_age > 0L) {
                 time_t change_time = get_changetime(first_in_log, &ldrc);
+                if (slapi_is_shutting_down()) {
+                    break;
+                }
                 if (change_time) {
                     if ((change_time + max_age) < now_maxage) {
                         retrocl_set_first_changenumber(first_in_log + 1);
                         ldrc = delete_changerecord(first_in_log);
+                        if (slapi_is_shutting_down()) {
+                            break;
+                        }
                         num_deleted++;
                         did_delete = 1;
                     }
@@ -290,6 +296,9 @@ trim_changelog(void)
                     /* What to do if there's no timestamp? Just delete it. */
                     retrocl_set_first_changenumber(first_in_log + 1);
                     ldrc = delete_changerecord(first_in_log);
+                    if (slapi_is_shutting_down()) {
+                        break;
+                    }
                     num_deleted++;
                     did_delete = 1;
                 }

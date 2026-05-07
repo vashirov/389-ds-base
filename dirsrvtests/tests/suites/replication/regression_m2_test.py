@@ -1135,9 +1135,9 @@ def test_bulk_import(preserve_topo_m2):
 
     agmt = Agreements(s1).list()[0]
     agmt.begin_reinit()
-    (done, error) = agmt.wait_reinit()
-    assert done is True
-    assert error is False
+    (done, error) = agmt.wait_reinit(timeout=600)
+    assert error is False, f"Reinit error: {error}"
+    assert done is True, "Reinit did not complete in time"
 
     repl.test_replication_topology(preserve_topo_m2)
 

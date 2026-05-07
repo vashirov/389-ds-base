@@ -1,0 +1,1116 @@
+provision:
+    how: virtual
+    hardware:
+        memory: '>= 4 GiB'
+        disk:
+            - size: '>= 20 GiB'
+
+prepare:
+    - name: Install 389-ds-base packages
+      how: install
+      package:
+          - 389-ds-base
+          - 389-ds-base-libs
+          - python3-lib389
+
+    - name: Install debuginfo packages
+      how: shell
+      script: dnf install -y 389-ds-base-debuginfo 389-ds-base-libs-debuginfo 389-ds-base-debugsource
+
+    - name: Install test dependencies
+      how: shell
+      script: |
+          dnf install -y --skip-unavailable \
+              python3-pytest python3-ldap openssl nss-tools openldap-clients \
+              krb5-server krb5-workstation expect sssd-tools gcc \
+              389-ds-base-devel json-c-devel nspr-devel nss-devel
+
+    - name: Verify BDB is available
+      how: shell
+      script: |
+          if test -f /usr/lib64/dirsrv/librobdb.so; then
+              echo "ERROR: Read-only BDB detected."
+              exit 1
+          fi
+
+    - name: Configure test environment
+      how: shell
+      script: |
+          HOSTNAME=$(hostname)
+          IP=$(hostname -I | awk '{print $1}')
+          grep -q "$HOSTNAME" /etc/hosts || echo "$IP $HOSTNAME" >> /etc/hosts
+          mkdir -p /var/tmp/cores
+          chmod 777 /var/tmp/cores
+          echo '/var/tmp/cores/core.%e.%P' > /proc/sys/kernel/core_pattern
+          systemctl start dbus.service
+
+environment:
+    NSSLAPD_DB_LIB: bdb
+    GSSAPI_ACK: 1
+
+execute:
+    how: tmt
+
+report:
+    how: junit
+
+/acl:
+    summary: Acl (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: acl
+              test: ./dirsrvtests/run-suite.sh acl
+              path: /
+              duration: 90m
+
+/attr_encryption:
+    summary: Attr Encryption (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: attr_encryption
+              test: ./dirsrvtests/run-suite.sh attr_encryption
+              path: /
+              duration: 90m
+
+/auth_token:
+    summary: Auth Token (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: auth_token
+              test: ./dirsrvtests/run-suite.sh auth_token
+              path: /
+              duration: 90m
+
+/automember_plugin:
+    summary: Automember Plugin (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: automember_plugin
+              test: ./dirsrvtests/run-suite.sh automember_plugin
+              path: /
+              duration: 90m
+
+/backups:
+    summary: Backups (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: backups
+              test: ./dirsrvtests/run-suite.sh backups
+              path: /
+              duration: 90m
+
+/basic:
+    summary: Basic (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: basic
+              test: ./dirsrvtests/run-suite.sh basic
+              path: /
+              duration: 90m
+
+/betxns:
+    summary: Betxns (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: betxns
+              test: ./dirsrvtests/run-suite.sh betxns
+              path: /
+              duration: 90m
+
+/chaining_plugin:
+    summary: Chaining Plugin (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: chaining_plugin
+              test: ./dirsrvtests/run-suite.sh chaining_plugin
+              path: /
+              duration: 90m
+
+/clu:
+    summary: Clu (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: clu
+              test: ./dirsrvtests/run-suite.sh clu
+              path: /
+              duration: 90m
+
+/config:
+    summary: Config (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: config
+              test: ./dirsrvtests/run-suite.sh config
+              path: /
+              duration: 90m
+
+/cos:
+    summary: Cos (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: cos
+              test: ./dirsrvtests/run-suite.sh cos
+              path: /
+              duration: 90m
+
+/disk_monitoring:
+    summary: Disk Monitoring (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: disk_monitoring
+              test: ./dirsrvtests/run-suite.sh disk_monitoring
+              path: /
+              duration: 90m
+
+/ds_logs:
+    summary: Ds Logs (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: ds_logs
+              test: ./dirsrvtests/run-suite.sh ds_logs
+              path: /
+              duration: 90m
+
+/ds_tools:
+    summary: Ds Tools (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: ds_tools
+              test: ./dirsrvtests/run-suite.sh ds_tools
+              path: /
+              duration: 90m
+
+/dynamic_lists:
+    summary: Dynamic Lists (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: dynamic_lists
+              test: ./dirsrvtests/run-suite.sh dynamic_lists
+              path: /
+              duration: 90m
+
+/dynamic_plugins:
+    summary: Dynamic Plugins (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: dynamic_plugins
+              test: ./dirsrvtests/run-suite.sh dynamic_plugins
+              path: /
+              duration: 90m
+
+/entryuuid:
+    summary: Entryuuid (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: entryuuid
+              test: ./dirsrvtests/run-suite.sh entryuuid
+              path: /
+              duration: 90m
+
+/export:
+    summary: Export (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: export
+              test: ./dirsrvtests/run-suite.sh export
+              path: /
+              duration: 90m
+
+/features:
+    summary: Features (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: features
+              test: ./dirsrvtests/run-suite.sh features
+              path: /
+              duration: 90m
+
+/filter:
+    summary: Filter (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: filter
+              test: ./dirsrvtests/run-suite.sh filter
+              path: /
+              duration: 90m
+
+/fourwaymmr:
+    summary: Fourwaymmr (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: fourwaymmr
+              test: ./dirsrvtests/run-suite.sh fourwaymmr
+              path: /
+              duration: 90m
+
+/fractional:
+    summary: Fractional (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: fractional
+              test: ./dirsrvtests/run-suite.sh fractional
+              path: /
+              duration: 90m
+
+/get_effective_rights:
+    summary: Get Effective Rights (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: get_effective_rights
+              test: ./dirsrvtests/run-suite.sh get_effective_rights
+              path: /
+              duration: 90m
+
+/gssapi:
+    summary: Gssapi (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: gssapi
+              test: ./dirsrvtests/run-suite.sh gssapi
+              path: /
+              duration: 90m
+
+/gssapi_repl:
+    summary: Gssapi Repl (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: gssapi_repl
+              test: ./dirsrvtests/run-suite.sh gssapi_repl
+              path: /
+              duration: 90m
+
+/healthcheck:
+    summary: Healthcheck (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: healthcheck
+              test: ./dirsrvtests/run-suite.sh healthcheck
+              path: /
+              duration: 90m
+
+/import:
+    summary: Import (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: import
+              test: ./dirsrvtests/run-suite.sh import
+              path: /
+              duration: 90m
+
+/indexes:
+    summary: Indexes (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: indexes
+              test: ./dirsrvtests/run-suite.sh indexes
+              path: /
+              duration: 90m
+
+/ldapi:
+    summary: Ldapi (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: ldapi
+              test: ./dirsrvtests/run-suite.sh ldapi
+              path: /
+              duration: 90m
+
+/lib389:
+    summary: Lib389 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: lib389
+              test: ./dirsrvtests/run-suite.sh lib389
+              path: /
+              duration: 90m
+
+/logging:
+    summary: Logging (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: logging
+              test: ./dirsrvtests/run-suite.sh logging
+              path: /
+              duration: 90m
+
+/mapping_tree:
+    summary: Mapping Tree (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: mapping_tree
+              test: ./dirsrvtests/run-suite.sh mapping_tree
+              path: /
+              duration: 90m
+
+/memberof_plugin:
+    summary: Memberof Plugin (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: memberof_plugin
+              test: ./dirsrvtests/run-suite.sh memberof_plugin
+              path: /
+              duration: 90m
+
+/memory_leaks:
+    summary: Memory Leaks (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: memory_leaks
+              test: ./dirsrvtests/run-suite.sh memory_leaks
+              path: /
+              duration: 90m
+
+/migration:
+    summary: Migration (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: migration
+              test: ./dirsrvtests/run-suite.sh migration
+              path: /
+              duration: 90m
+
+/monitor:
+    summary: Monitor (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: monitor
+              test: ./dirsrvtests/run-suite.sh monitor
+              path: /
+              duration: 90m
+
+/openldap_2_389:
+    summary: Openldap 2 389 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: openldap_2_389
+              test: ./dirsrvtests/run-suite.sh openldap_2_389
+              path: /
+              duration: 90m
+
+/paged_results:
+    summary: Paged Results (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: paged_results
+              test: ./dirsrvtests/run-suite.sh paged_results
+              path: /
+              duration: 90m
+
+/password:
+    summary: Password (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: password
+              test: ./dirsrvtests/run-suite.sh password
+              path: /
+              duration: 90m
+
+/plugins:
+    summary: Plugins (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: plugins
+              test: ./dirsrvtests/run-suite.sh plugins
+              path: /
+              duration: 90m
+
+/psearch:
+    summary: Psearch (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: psearch
+              test: ./dirsrvtests/run-suite.sh psearch
+              path: /
+              duration: 90m
+
+/pwp_storage:
+    summary: Pwp Storage (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: pwp_storage
+              test: ./dirsrvtests/run-suite.sh pwp_storage
+              path: /
+              duration: 90m
+
+/referint_plugin:
+    summary: Referint Plugin (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: referint_plugin
+              test: ./dirsrvtests/run-suite.sh referint_plugin
+              path: /
+              duration: 90m
+
+/resource_limits:
+    summary: Resource Limits (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: resource_limits
+              test: ./dirsrvtests/run-suite.sh resource_limits
+              path: /
+              duration: 90m
+
+/retrocl:
+    summary: Retrocl (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: retrocl
+              test: ./dirsrvtests/run-suite.sh retrocl
+              path: /
+              duration: 180m
+
+/rewriters:
+    summary: Rewriters (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: rewriters
+              test: ./dirsrvtests/run-suite.sh rewriters
+              path: /
+              duration: 90m
+
+/roles:
+    summary: Roles (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: roles
+              test: ./dirsrvtests/run-suite.sh roles
+              path: /
+              duration: 90m
+
+/sasl:
+    summary: Sasl (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: sasl
+              test: ./dirsrvtests/run-suite.sh sasl
+              path: /
+              duration: 90m
+
+/schema:
+    summary: Schema (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: schema
+              test: ./dirsrvtests/run-suite.sh schema
+              path: /
+              duration: 90m
+
+/session_tracking:
+    summary: Session Tracking (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: session_tracking
+              test: ./dirsrvtests/run-suite.sh session_tracking
+              path: /
+              duration: 90m
+
+/setup_ds:
+    summary: Setup Ds (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: setup_ds
+              test: ./dirsrvtests/run-suite.sh setup_ds
+              path: /
+              duration: 90m
+
+/slapi_memberof:
+    summary: Slapi Memberof (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: slapi_memberof
+              test: ./dirsrvtests/run-suite.sh slapi_memberof
+              path: /
+              duration: 90m
+
+/state:
+    summary: State (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: state
+              test: ./dirsrvtests/run-suite.sh state
+              path: /
+              duration: 90m
+
+/subentries:
+    summary: Subentries (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: subentries
+              test: ./dirsrvtests/run-suite.sh subentries
+              path: /
+              duration: 90m
+
+/syncrepl_plugin:
+    summary: Syncrepl Plugin (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: syncrepl_plugin
+              test: ./dirsrvtests/run-suite.sh syncrepl_plugin
+              path: /
+              duration: 90m
+
+/syntax:
+    summary: Syntax (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: syntax
+              test: ./dirsrvtests/run-suite.sh syntax
+              path: /
+              duration: 90m
+
+/threads:
+    summary: Threads (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: threads
+              test: ./dirsrvtests/run-suite.sh threads
+              path: /
+              duration: 90m
+
+/tls:
+    summary: Tls (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: tls
+              test: ./dirsrvtests/run-suite.sh tls
+              path: /
+              duration: 90m
+
+/upgrade:
+    summary: Upgrade (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: upgrade
+              test: ./dirsrvtests/run-suite.sh upgrade
+              path: /
+              duration: 90m
+
+/vlv:
+    summary: Vlv (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: vlv
+              test: ./dirsrvtests/run-suite.sh vlv
+              path: /
+              duration: 90m
+
+/replication_acceptance_test:
+    summary: Replication - Acceptance (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_acceptance_test
+              test: ./dirsrvtests/run-suite.sh replication/acceptance_test.py
+              path: /
+              duration: 90m
+
+/replication_acl_replication_test:
+    summary: Replication - Acl Replication (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_acl_replication_test
+              test: ./dirsrvtests/run-suite.sh replication/acl_replication_test.py
+              path: /
+              duration: 90m
+
+/replication_cascading_test:
+    summary: Replication - Cascading (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cascading_test
+              test: ./dirsrvtests/run-suite.sh replication/cascading_test.py
+              path: /
+              duration: 90m
+
+/replication_changelog_encryption_test:
+    summary: Replication - Changelog Encryption (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_changelog_encryption_test
+              test: ./dirsrvtests/run-suite.sh replication/changelog_encryption_test.py
+              path: /
+              duration: 90m
+
+/replication_changelog_test:
+    summary: Replication - Changelog (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_changelog_test
+              test: ./dirsrvtests/run-suite.sh replication/changelog_test.py
+              path: /
+              duration: 90m
+
+/replication_changelog_trimming_test:
+    summary: Replication - Changelog Trimming (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_changelog_trimming_test
+              test: ./dirsrvtests/run-suite.sh replication/changelog_trimming_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_abort_certify_test:
+    summary: Replication - Cleanallruv Abort Certify (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_abort_certify_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_abort_certify_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_abort_restart_test:
+    summary: Replication - Cleanallruv Abort Restart (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_abort_restart_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_abort_restart_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_abort_test:
+    summary: Replication - Cleanallruv Abort (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_abort_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_abort_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_force_test:
+    summary: Replication - Cleanallruv Force (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_force_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_force_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_fractional_test:
+    summary: Replication - Cleanallruv Fractional (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_fractional_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_fractional_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_max_tasks_test:
+    summary: Replication - Cleanallruv Max Tasks (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_max_tasks_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_max_tasks_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_multiple_force_test:
+    summary: Replication - Cleanallruv Multiple Force (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_multiple_force_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_multiple_force_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_restart_test:
+    summary: Replication - Cleanallruv Restart (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_restart_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_restart_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_shutdown_crash_test:
+    summary: Replication - Cleanallruv Shutdown Crash (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_shutdown_crash_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_shutdown_crash_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_stress_test:
+    summary: Replication - Cleanallruv Stress (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_stress_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_stress_test.py
+              path: /
+              duration: 90m
+
+/replication_cleanallruv_test:
+    summary: Replication - Cleanallruv (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_cleanallruv_test
+              test: ./dirsrvtests/run-suite.sh replication/cleanallruv_test.py
+              path: /
+              duration: 90m
+
+/replication_conflict_resolve_test:
+    summary: Replication - Conflict Resolve (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_conflict_resolve_test
+              test: ./dirsrvtests/run-suite.sh replication/conflict_resolve_test.py
+              path: /
+              duration: 90m
+
+/replication_encryption_cl5_test:
+    summary: Replication - Encryption Cl5 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_encryption_cl5_test
+              test: ./dirsrvtests/run-suite.sh replication/encryption_cl5_test.py
+              path: /
+              duration: 90m
+
+/replication_multiple_changelogs_test:
+    summary: Replication - Multiple Changelogs (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_multiple_changelogs_test
+              test: ./dirsrvtests/run-suite.sh replication/multiple_changelogs_test.py
+              path: /
+              duration: 90m
+
+/replication_numsubordinates_replication_test:
+    summary: Replication - Numsubordinates Replication (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_numsubordinates_replication_test
+              test: ./dirsrvtests/run-suite.sh replication/numsubordinates_replication_test.py
+              path: /
+              duration: 90m
+
+/replication_promote_demote_test:
+    summary: Replication - Promote Demote (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_promote_demote_test
+              test: ./dirsrvtests/run-suite.sh replication/promote_demote_test.py
+              path: /
+              duration: 90m
+
+/replication_regression_i2_test:
+    summary: Replication - Regression I2 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_regression_i2_test
+              test: ./dirsrvtests/run-suite.sh replication/regression_i2_test.py
+              path: /
+              duration: 90m
+
+/replication_regression_m2c1_test:
+    summary: Replication - Regression M2c1 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_regression_m2c1_test
+              test: ./dirsrvtests/run-suite.sh replication/regression_m2c1_test.py
+              path: /
+              duration: 90m
+
+/replication_regression_m2c2_test:
+    summary: Replication - Regression M2c2 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_regression_m2c2_test
+              test: ./dirsrvtests/run-suite.sh replication/regression_m2c2_test.py
+              path: /
+              duration: 90m
+
+/replication_regression_m2_test:
+    summary: Replication - Regression M2 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_regression_m2_test
+              test: ./dirsrvtests/run-suite.sh replication/regression_m2_test.py
+              path: /
+              duration: 90m
+
+/replication_regression_m3_test:
+    summary: Replication - Regression M3 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_regression_m3_test
+              test: ./dirsrvtests/run-suite.sh replication/regression_m3_test.py
+              path: /
+              duration: 90m
+
+/replication_repl_agmt_bootstrap_test:
+    summary: Replication - Repl Agmt Bootstrap (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_repl_agmt_bootstrap_test
+              test: ./dirsrvtests/run-suite.sh replication/repl_agmt_bootstrap_test.py
+              path: /
+              duration: 90m
+
+/replication_repl_conflict_delete_modify_test:
+    summary: Replication - Repl Conflict Delete Modify (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_repl_conflict_delete_modify_test
+              test: ./dirsrvtests/run-suite.sh replication/repl_conflict_delete_modify_test.py
+              path: /
+              duration: 90m
+
+/replication_replica_config_test:
+    summary: Replication - Replica Config (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_replica_config_test
+              test: ./dirsrvtests/run-suite.sh replication/replica_config_test.py
+              path: /
+              duration: 90m
+
+/replication_replica_roles_test:
+    summary: Replication - Replica Roles (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_replica_roles_test
+              test: ./dirsrvtests/run-suite.sh replication/replica_roles_test.py
+              path: /
+              duration: 90m
+
+/replication_replication_deadlock_test:
+    summary: Replication - Replication Deadlock (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_replication_deadlock_test
+              test: ./dirsrvtests/run-suite.sh replication/replication_deadlock_test.py
+              path: /
+              duration: 90m
+
+/replication_repl_log_monitoring_test:
+    summary: Replication - Repl Log Monitoring (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_repl_log_monitoring_test
+              test: ./dirsrvtests/run-suite.sh replication/repl_log_monitoring_test.py
+              path: /
+              duration: 90m
+
+/replication_ruv_before_suffix_entryid_test:
+    summary: Replication - Ruv Before Suffix Entryid (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_ruv_before_suffix_entryid_test
+              test: ./dirsrvtests/run-suite.sh replication/ruv_before_suffix_entryid_test.py
+              path: /
+              duration: 90m
+
+/replication_ruvstore_test:
+    summary: Replication - Ruvstore (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_ruvstore_test
+              test: ./dirsrvtests/run-suite.sh replication/ruvstore_test.py
+              path: /
+              duration: 90m
+
+/replication_sasl_m2_test:
+    summary: Replication - Sasl M2 (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_sasl_m2_test
+              test: ./dirsrvtests/run-suite.sh replication/sasl_m2_test.py
+              path: /
+              duration: 90m
+
+/replication_selfdn_acl_replication_test:
+    summary: Replication - Selfdn Acl Replication (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_selfdn_acl_replication_test
+              test: ./dirsrvtests/run-suite.sh replication/selfdn_acl_replication_test.py
+              path: /
+              duration: 90m
+
+/replication_series_of_repl_bugs_test:
+    summary: Replication - Series Of Repl Bugs (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_series_of_repl_bugs_test
+              test: ./dirsrvtests/run-suite.sh replication/series_of_repl_bugs_test.py
+              path: /
+              duration: 90m
+
+/replication_single_master_test:
+    summary: Replication - Single Master (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_single_master_test
+              test: ./dirsrvtests/run-suite.sh replication/single_master_test.py
+              path: /
+              duration: 90m
+
+/replication_tls_client_auth_repl_test:
+    summary: Replication - Tls Client Auth Repl (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_tls_client_auth_repl_test
+              test: ./dirsrvtests/run-suite.sh replication/tls_client_auth_repl_test.py
+              path: /
+              duration: 90m
+
+/replication_tombstone_fixup_test:
+    summary: Replication - Tombstone Fixup (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_tombstone_fixup_test
+              test: ./dirsrvtests/run-suite.sh replication/tombstone_fixup_test.py
+              path: /
+              duration: 90m
+
+/replication_tombstone_repl_mods_test:
+    summary: Replication - Tombstone Repl Mods (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_tombstone_repl_mods_test
+              test: ./dirsrvtests/run-suite.sh replication/tombstone_repl_mods_test.py
+              path: /
+              duration: 90m
+
+/replication_tombstone_test:
+    summary: Replication - Tombstone (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_tombstone_test
+              test: ./dirsrvtests/run-suite.sh replication/tombstone_test.py
+              path: /
+              duration: 90m
+
+/replication_urp_test:
+    summary: Replication - Urp (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_urp_test
+              test: ./dirsrvtests/run-suite.sh replication/urp_test.py
+              path: /
+              duration: 90m
+
+/replication_virtual_attribute_replication_test:
+    summary: Replication - Virtual Attribute Replication (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_virtual_attribute_replication_test
+              test: ./dirsrvtests/run-suite.sh replication/virtual_attribute_replication_test.py
+              path: /
+              duration: 90m
+
+/replication_wait_for_async_feature_test:
+    summary: Replication - Wait For Async Feature (BDB)
+    discover:
+        how: shell
+        tests:
+            - name: replication_wait_for_async_feature_test
+              test: ./dirsrvtests/run-suite.sh replication/wait_for_async_feature_test.py
+              path: /
+              duration: 90m
+
