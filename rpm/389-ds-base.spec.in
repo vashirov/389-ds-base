@@ -22,7 +22,7 @@
 %endif
 
 %bcond repl_reports 0
-%if 0%{?fedora} >= 40
+%if 0%{?fedora} >= 40 && 0%{?fedora} < 44
 %bcond repl_reports 1
 %endif
 
