@@ -596,8 +596,9 @@ class Backend(DSLdapObject):
 
     def _lint_backend_implementation_cleanup_needed(self):
         db_files = os.listdir(self._instance.ds_paths.db_dir)
-        if self._instance.ds_paths.db_home_dir is not None and self._instance.ds_paths.db_home_dir != self._instance.ds_paths.db_dir:
-            db_files.extend(os.listdir(self._instance.ds_paths.db_home_dir))
+        db_home = self._instance.ds_paths.db_home_dir
+        if db_home is not None and db_home != self._instance.ds_paths.db_dir and os.path.isdir(db_home):
+            db_files.extend(os.listdir(db_home))
         db_files = [f.lower() for f in db_files]
         db_files = sorted(set(db_files))
 
