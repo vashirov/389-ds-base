@@ -1,0 +1,37 @@
+name: Backport
+
+on:
+  pull_request_target:
+    types: [closed, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  backport:
+    name: Backport
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.merged == true &&
+      contains(toJSON(github.event.pull_request.labels.*.name), '"backport ')
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: korthout/backport-action@2e830a1d0b8269505846ddd407a70876913ad1f8 # v4
+        with:
+          # Label format: "backport <branch>" e.g. "backport 389-ds-base-3.1"
+          label_pattern: "^backport ([^ ]+)$"
+          pull_title: "[Backport ${target_branch}] ${pull_title}"
+          pull_description: |-
+            Backport of #${pull_number} to `${target_branch}`.
+
+            ---
+            Original PR: #${pull_number}
+          copy_labels_pattern: ".*"
+          copy_requested_reviewers: true
+          experimental: >
+            {
+              "conflict_resolution": "draft_commit_conflicts"
+            }
