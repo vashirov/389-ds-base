@@ -5,7 +5,11 @@
 and secure LDAP server implementation. It handles many of the
 largest LDAP deployments in the world.
 
+<<<<<<< HEAD
 All our code has been extensively tested with sanitization tools.
+=======
+All our code has been extensively tested with sanitisation tools!
+>>>>>>> d199e80e9 (Exclamation mark)
 As well as a rich feature set of fail-over and backup technologies
 gives administrators confidence their accounts are safe.
 
