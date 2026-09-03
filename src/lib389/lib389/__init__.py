@@ -923,7 +923,7 @@ class DirSrv(SimpleLDAPObject, object):
         self.state = DIRSRV_STATE_ALLOCATED
 
     def open(self, uri=None, saslmethod=None, sasltoken=None, certdir=None, starttls=False, connOnly=False, reqcert=None,
-                usercert=None, userkey=None):
+                 usercert=None, userkey=None, serverctrls=None, clientctrls=None):
         '''
             It opens a ldap bound connection to dirsrv so that online
             administrative tasks are possible.  It binds with the binddn
@@ -944,6 +944,7 @@ class DirSrv(SimpleLDAPObject, object):
         # Force our state offline to prevent paths from trying to search
         # cn=config while we startup.
         self.state = DIRSRV_STATE_OFFLINE
+        self.bind_response_controls = []
 
         if not uri:
             uri = self.toLDAPURL()
@@ -1041,7 +1042,11 @@ class DirSrv(SimpleLDAPObject, object):
             Do a simple bind
             """
             try:
-                self.simple_bind_s(ensure_str(self.binddn), self.bindpw, escapehatch='i am sure')
+                bind_result = self.simple_bind_s(ensure_str(self.binddn), self.bindpw,
+                                                 serverctrls=serverctrls,
+                                                 clientctrls=clientctrls,
+                                                 escapehatch='i am sure')
+                self.bind_response_controls = bind_result[3]
             except ldap.SERVER_DOWN as e:
                 # TODO add server info in exception
                 self.log.debug("Cannot connect to %r", uri)

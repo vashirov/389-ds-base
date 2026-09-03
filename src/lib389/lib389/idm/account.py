@@ -247,12 +247,21 @@ class Account(DSLdapObject):
         inst_clone.open(*args, **kwargs)
         return inst_clone
 
-    def rebind(self, password):
+    def rebind(self, password, serverctrls=None, clientctrls=None):
         """Rebind on the same connection
         :param password: An entry password
         :type password: str
+        :param serverctrls: Controls sent with the bind request
+        :param clientctrls: Client controls sent with the bind request
+        :returns: Server response controls
         """
-        self._instance.simple_bind_s(self.dn, password, escapehatch='i am sure')
+        result = self._instance.simple_bind_s(
+            self.dn,
+            password,
+            serverctrls=serverctrls,
+            clientctrls=clientctrls,
+            escapehatch='i am sure')
+        return result[3]
 
     def sasl_bind(self, *args, **kwargs):
         """Open a new connection and bind with the entry via SASL.

@@ -45,9 +45,18 @@ class DirectoryManager(Account):
         """
         return super(DirectoryManager, self).bind(password, *args, **kwargs)
 
-    def rebind(self, password=PW_DM):
+    def rebind(self, password=PW_DM, serverctrls=None, clientctrls=None):
         """Rebind on the same connection
         :param password: Directory Manager password
         :type password: str
+        :param serverctrls: Controls sent with the bind request
+        :param clientctrls: Client controls sent with the bind request
+        :returns: Server response controls
         """
-        self._instance.simple_bind_s(self.dn, password, escapehatch='i am sure')
+        result = self._instance.simple_bind_s(
+            self.dn,
+            password,
+            serverctrls=serverctrls,
+            clientctrls=clientctrls,
+            escapehatch='i am sure')
+        return result[3]
