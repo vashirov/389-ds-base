@@ -12,11 +12,11 @@ import pytest
 import os
 import ldap
 import time
-import ast
 
 from ldap.controls.ppolicy import PasswordPolicyControl
 from ldap.controls.pwdpolicy import PasswordExpiredControl
 from test389.topologies import topology_st as topo
+from lib389.idm.directorymanager import DirectoryManager
 from lib389.idm.user import UserAccounts
 from lib389._constants import (DN_DM, PASSWORD, DEFAULT_SUFFIX)
 
@@ -56,19 +56,15 @@ def init_user(topo, request):
 
 def bind_and_get_control(topo):
     log.info('Bind as the user, and return any controls')
-    res_type = res_data = res_msgid = res_ctrls = None
-    result_id = ''
+    user = UserAccounts(topo.standalone, DEFAULT_SUFFIX).get('test entry')
 
     try:
-        result_id = topo.standalone.simple_bind(USER_DN, USER_PW,
-                                                serverctrls=[PasswordPolicyControl()])
-        res_type, res_data, res_msgid, res_ctrls = topo.standalone.result3(result_id)
+        res_ctrls = user.rebind(USER_PW, serverctrls=[PasswordPolicyControl()])
     except ldap.LDAPError as e:
         log.info('Got expected error: {}'.format(str(e)))
-        res_ctrls = ast.literal_eval(str(e))
-        pass
+        res_ctrls = e.args[0]['ctrls']
 
-    topo.standalone.simple_bind(DN_DM, PASSWORD)
+    DirectoryManager(topo.standalone).rebind(PASSWORD)
     return res_ctrls
 
 
@@ -78,7 +74,7 @@ def change_passwd(topo):
     user = users.get('test entry')
     user.rebind(USER_PW)
     user.reset_password(USER_PW)
-    topo.standalone.simple_bind(DN_DM, PASSWORD)
+    DirectoryManager(topo.standalone).rebind(PASSWORD)
 
 
 def test_controltype_expired_grace_limit(topo, init_user):
@@ -120,8 +116,8 @@ def test_controltype_expired_grace_limit(topo, init_user):
     log.info('Bind with expired grace login and check the sequence')
     # No grace login available, bind should fail, controls will be returned in error message
     controls = bind_and_get_control(topo)
-    assert (controls['ctrls'][0][0] == "1.3.6.1.4.1.42.2.27.8.5.1")
-    assert (controls['ctrls'][1][0] == "2.16.840.1.113730.3.4.4")
+    assert (controls[0][0] == "1.3.6.1.4.1.42.2.27.8.5.1")
+    assert (controls[1][0] == "2.16.840.1.113730.3.4.4")
 
 
 if __name__ == '__main__':
